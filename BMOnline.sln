@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33712.159
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BMOnline.Mod", "BMOnline.Mod\BMOnline.Mod.csproj", "{FDFD72F1-32A0-41F9-A2D2-5544CF06C342}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BMOnline.Server", "BMOnline.Server\BMOnline.Server.csproj", "{06AE5DE9-E2EB-4C5C-B836-6BBCCF943508}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BMOnline.Common", "BMOnline.Common\BMOnline.Common.csproj", "{257A7605-B1FC-4CED-8E36-A8B7E75A47B4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BMOnline.Client", "BMOnline.Client\BMOnline.Client.csproj", "{3D35A7BF-9CE2-439E-A96D-0D7BE2838E20}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BMOnline.StressTest", "BMOnline.StressTest\BMOnline.StressTest.csproj", "{5747D653-7B8C-4561-9CAC-7E5662691041}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{84E434B2-D3B5-485F-8EEA-71C1C4A61569}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.build.props = Directory.build.props
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDFD72F1-32A0-41F9-A2D2-5544CF06C342}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDFD72F1-32A0-41F9-A2D2-5544CF06C342}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDFD72F1-32A0-41F9-A2D2-5544CF06C342}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFD72F1-32A0-41F9-A2D2-5544CF06C342}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06AE5DE9-E2EB-4C5C-B836-6BBCCF943508}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06AE5DE9-E2EB-4C5C-B836-6BBCCF943508}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06AE5DE9-E2EB-4C5C-B836-6BBCCF943508}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06AE5DE9-E2EB-4C5C-B836-6BBCCF943508}.Release|Any CPU.Build.0 = Release|Any CPU
+		{257A7605-B1FC-4CED-8E36-A8B7E75A47B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{257A7605-B1FC-4CED-8E36-A8B7E75A47B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{257A7605-B1FC-4CED-8E36-A8B7E75A47B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{257A7605-B1FC-4CED-8E36-A8B7E75A47B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D35A7BF-9CE2-439E-A96D-0D7BE2838E20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D35A7BF-9CE2-439E-A96D-0D7BE2838E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D35A7BF-9CE2-439E-A96D-0D7BE2838E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D35A7BF-9CE2-439E-A96D-0D7BE2838E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5747D653-7B8C-4561-9CAC-7E5662691041}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5747D653-7B8C-4561-9CAC-7E5662691041}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5747D653-7B8C-4561-9CAC-7E5662691041}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5747D653-7B8C-4561-9CAC-7E5662691041}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A657E2F2-E87C-4FF2-9568-D42A6F35CCBB}
+	EndGlobalSection
+EndGlobal
