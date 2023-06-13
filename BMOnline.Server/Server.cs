@@ -41,8 +41,12 @@ namespace BMOnline.Server
             if (userManager.UserSecretExists(message.Secret))
                 return; //Login packets may be duplicated
 
+            //Incorrect protocol version, probably on an old version
             if (message.ProtocolVersion != PROTOCOL_VERSION)
-                return; //Incorrect protocol version, probably on an old version
+            {
+                loginRefusals.Add((remoteEndPoint, message.Secret, LoginRefuseReason.ProtocolVersion));
+                return;
+            }
 
             //Check password
             if (!string.IsNullOrEmpty(password) && message.Password != password)

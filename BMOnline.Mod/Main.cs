@@ -99,6 +99,9 @@ namespace BMOnline.Mod
             {
                 switch (client.RefuseReason)
                 {
+                    case LoginRefuseReason.ProtocolVersion:
+                        connectStateManager.SetDisconnected("Wrong mod version\nMake sure the mod is on the latest version");
+                        break;
                     case LoginRefuseReason.Password:
                         connectStateManager.SetDisconnected("Incorrect password");
                         break;
