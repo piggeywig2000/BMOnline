@@ -64,7 +64,9 @@ namespace BMOnline.Mod
             }
             catch (Exception) { }
             //If no IP address specified use piggeywig2000.com, or localhost if DNS don't work for some reason
+#if !DEBUG
             serverIpAddress ??= Dns.GetHostAddresses("piggeywig2000.com").FirstOrDefault();
+#endif
             serverIpAddress ??= IPAddress.Loopback;
             if (settings.TryGetValue("ServerPort", out object objPort) && objPort is string strPort && !string.IsNullOrWhiteSpace(strPort) && ushort.TryParse(strPort, out ushort port))
             {
