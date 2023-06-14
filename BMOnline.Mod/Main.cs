@@ -90,6 +90,7 @@ namespace BMOnline.Mod
 
         public static void OnModLateUpdate()
         {
+            //Check for fatal networking errors
             if (hasFatalErrored)
             {
                 connectStateManager.SetDisconnected("Could not connect to server");
@@ -112,6 +113,7 @@ namespace BMOnline.Mod
                 return;
             }
 
+            //Initiate networking
             if (!hasInited && !hasFatalErrored)
             {
                 MainGameStagePatch.CreateDetour();
@@ -148,6 +150,7 @@ namespace BMOnline.Mod
                 hasInited = true;
             }
 
+            //Ensure networking client is still running
             if (clientLoop.IsCompleted)
             {
                 Log.Error($"An unknown networking error occurred. Exception details:\n{clientLoop.Exception}");
@@ -157,6 +160,8 @@ namespace BMOnline.Mod
 
             bool isInGame = mainGameStage != null && !mainGameStage.m_IsFullReplay;
             OnlineState.OnlineLocation location = isInGame ? OnlineState.OnlineLocation.Game : OnlineState.OnlineLocation.Menu;
+
+            //If stage destroyed, clear other players
             if (wasMainStageDestroyed)
             {
                 foreach (NetPlayer netPlayer in idToPlayer.Values)
@@ -168,6 +173,7 @@ namespace BMOnline.Mod
                 idToLoadingPlayer.Clear();
                 objRoot = null;
             }
+            //If stage created, initialise values and get customisations
             if (wasMainStageCreated)
             {
                 objRoot = GameObject.Find("ObjRoot").transform;
@@ -201,12 +207,13 @@ namespace BMOnline.Mod
 
             connectStateManager.SetVisibility(!isInGame || Pause.isEnable);
 
-            //Update client state
             if (client.StateSemaphore.Wait(0))
             {
+                //Update players online text
                 if (client.IsConnected)
                     connectStateManager.SetConnected(client.State.OnlineCount);
 
+                //Update client state
                 client.State.Location = location;
                 if (isInGame)
                 {
@@ -332,6 +339,7 @@ namespace BMOnline.Mod
                     }
                 }
 
+                //Reset other players if stage was reset
                 if (isInGame && wasMainStageReset)
                 {
                     foreach (NetPlayer netPlayer in idToPlayer.Values)
@@ -368,7 +376,6 @@ namespace BMOnline.Mod
                 didRotateLastFrame = false;
             }
 
-            //Update positions of other players here so that GravityTilt works properly
             foreach (ushort playerId in idToPlayer.Keys)
             {
                 NetPlayer netPlayer = idToPlayer[playerId];
