@@ -18,6 +18,11 @@ Firstly, install the [Banana Mod Manager](https://github.com/MorsGames/BananaMod
 
 Download the latest version of the mod from the [Releases](https://github.com/piggeywig2000/BMOnline/releases) page, and extract the zip into the "mods" folder inside the game's installation folder. Open Banana Mod Manager, make sure that the checkbox next to the mod is ticked, and run the game.
 
+## Mod incompatibilities
+This mod not compatible with the [Dynamic Sounds](https://gamebanana.com/mods/327614) or [Guest Character Voice Pack](https://gamebanana.com/mods/331507) mods. A fix for these is available [here](https://cdn.discordapp.com/attachments/1112087408226340884/1119091523611525120/SoundModMultiplayerFixes.zip).
+
+Credit to snowman for the original mods and iswimfly for fixing them to work with this mod.
+
 ## Settings
 The mod settings can be changed in the Banana Mod Manager by clicking on the mod. If you'd like to just play the game online you don't need to worry about changing the mod settings, it should just work.
 
