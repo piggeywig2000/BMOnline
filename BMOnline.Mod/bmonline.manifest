@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 4102064585
+CRC: 3785662847
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 698836f9d37138d51ffbe0ae3246457a
+    Hash: 76e0918d0b7b9e157dfd377d0f6b34b2
   TypeTreeHash:
     serializedVersion: 2
     Hash: 60801058023316738b54196b209d4435
@@ -48,6 +48,7 @@ ClassTypes:
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/Prefabs/NameTag.prefab
+- Assets/Prefabs/Chat.prefab
 - Assets/Prefabs/ConnectStatus.prefab
 - Assets/Prefabs/PlayerCount.prefab
 Dependencies: []

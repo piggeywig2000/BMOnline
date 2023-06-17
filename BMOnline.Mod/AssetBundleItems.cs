@@ -70,5 +70,18 @@ namespace BMOnline.Mod
                 return connectStatusPrefab;
             }
         }
+
+        private static GameObject chatPrefab;
+        public static GameObject ChatPrefab
+        {
+            get
+            {
+                if (chatPrefab == null)
+                {
+                    chatPrefab = BmOnlineAb.LoadAsset<GameObject>("Assets/Prefabs/Chat.prefab");
+                }
+                return chatPrefab;
+            }
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using BMOnline.Client;
 using BMOnline.Common;
+using BMOnline.Mod.Chat;
 using BMOnline.Mod.Patches;
 using Flash2;
 using Framework;
@@ -28,6 +29,7 @@ namespace BMOnline.Mod
 
         private static ConnectStateManager connectStateManager;
         private static PlayerCountManager playerCountManager;
+        private static ChatManager chatManager;
         private static MgCourseDataManager courseDataManager = null;
         private static Transform objRoot = null;
 
@@ -120,9 +122,11 @@ namespace BMOnline.Mod
             {
                 MainGameStagePatch.CreateDetour();
                 PlayerMotionPatch.CreateDetour();
+                AppInputPatch.CreateDetour();
 
                 connectStateManager = new ConnectStateManager();
                 playerCountManager = new PlayerCountManager();
+                chatManager = new ChatManager();
                 courseDataManager = GameObject.Find("MgCourseDataManager").GetComponent<MgCourseDataManager>();
 
                 string name = SteamManager.GetFriendsHandler().GetPersonaName();
@@ -208,6 +212,9 @@ namespace BMOnline.Mod
                 connectStateManager.SetConnecting();
 
             connectStateManager.SetVisibility(!isInGame || Pause.isEnable);
+
+            //Update chat
+            chatManager.Update();
 
             if (client.StateSemaphore.Wait(0))
             {
