@@ -20,6 +20,7 @@ namespace BMOnline.Mod
         private static Task clientLoop;
         private static bool hasInited = false;
         private static bool hasFatalErrored = false;
+        private static bool hasShownWelcomeChat = false;
 
         private static IPAddress serverIpAddress = null;
         private static ushort serverPort = 10998;
@@ -214,6 +215,11 @@ namespace BMOnline.Mod
             connectStateManager.SetVisibility(!isInGame || Pause.isEnable);
 
             //Update chat
+            if (client.IsConnected && !hasShownWelcomeChat)
+            {
+                chatManager.AddChatMessage("Welcome to Banana Mania Online! Press 'T' to type in the chat.");
+                hasShownWelcomeChat = true;
+            }
             string outgoingMessage = chatManager.UpdateAndGetSubmittedChat();
 
             if (client.StateSemaphore.Wait(0))
