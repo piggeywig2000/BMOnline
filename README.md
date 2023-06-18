@@ -7,7 +7,7 @@ Online multiplayer mod for Super Monkey Ball Banana Mania, MMO style. Everyone c
   - If you choose a DLC character, players that don't own the DLC may see AiAi or an untextured version of your character instead
 - The number of players in each stage is shown on the stage selection screen
   - The course and mode selection screens show the total number of players in every stage in that course or mode, with the exception of challenge mode, which shows the total number of players playing that challenge mode course
-- An in-game text chat
+- In-game text chat
 
 ### Coming soon (hopefully)
 - A race mode, where all players are put into a random stage at the same time together and compete to reach the goal first
