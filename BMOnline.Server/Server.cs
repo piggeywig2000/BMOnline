@@ -64,7 +64,7 @@ namespace BMOnline.Server
             }
 
             //Clean name
-            message.Name = message.Name.RemoveWhitespace();
+            message.Name = message.Name.RemoveWhitespace().RemoveRichText().RemoveDoubleSpaces();
 
             //Name cannot be longer than 32 characters and must be longer than 0 characters
             if (message.Name.Length > 32 || message.Name.Length == 0)
@@ -75,6 +75,7 @@ namespace BMOnline.Server
 
             User newUser = new User(message.Secret, message.Name, remoteEndPoint, Time);
             userManager.AddUser(newUser);
+            outgoingChats.SendChat($"<color=yellow>{newUser.Name} joined the server</color>");
             Log.Info($"{newUser.Name} (ID {newUser.Id}) logged in");
         }
 
@@ -121,16 +122,23 @@ namespace BMOnline.Server
             if (!userManager.TryGetUserFromSecret(message.Secret, out User? user))
                 return; //If user not found, drop packet
             user.Renew(Time);
-            user.IncomingChats.ReceiveChatFromRemote(message.Index, message.Content.RemoveWhitespace());
+            user.IncomingChats.ReceiveChatFromRemote(message.Index, message.Content.RemoveWhitespace().RemoveRichText().RemoveDoubleSpaces());
             if (user.IncomingChats.HasReceivedChat)
             {
-                outgoingChats.SendChat($"[{user.Name}] {user.IncomingChats.GetReceivedChat()}");
+                string content = user.IncomingChats.GetReceivedChat();
+                if (!string.IsNullOrWhiteSpace(content))
+                    outgoingChats.SendChat($"[{user.Name}] {content}");
             }
         }
 
         protected override async Task SendTick()
         {
-            userManager.RemoveExpired(Time);
+            User[] expiredUsers = userManager.RemoveExpired(Time);
+            foreach (User expiredUser in  expiredUsers)
+            {
+                outgoingChats.SendChat($"<color=yellow>{expiredUser.Name} left the server</color>");
+                Log.Info($"{expiredUser.Name} (ID {expiredUser.Id}) disconnected");
+            }
 
             foreach ((IPEndPoint endPoint, uint secret, LoginRefuseReason reason) in loginRefusals)
             {

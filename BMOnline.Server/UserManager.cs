@@ -28,17 +28,17 @@ namespace BMOnline.Server
             secretToUser.Add(user.Secret, user);
         }
 
-        public void RemoveExpired(TimeSpan currentTime)
+        public User[] RemoveExpired(TimeSpan currentTime)
         {
             User[] expiredUsers = secretToUser.Values.Where(u => u.IsExpired(currentTime)).ToArray();
             foreach (User user in expiredUsers)
             {
-                Log.Info($"{user.Name} (ID {user.Id}) disconnected");
                 idToUser.Remove(user.Id);
                 secretToUser.Remove(user.Secret);
                 courseToSecrets.RemoveSecretFromCollection(user.Course, user.Secret);
                 stageToSecrets.RemoveSecretFromCollection(user.Stage, user.Secret);
             }
+            return expiredUsers;
         }
 
         public void MoveUserToMenu(User user)
