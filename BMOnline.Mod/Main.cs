@@ -217,7 +217,7 @@ namespace BMOnline.Mod
             //Update chat
             if (client.IsConnected && !hasShownWelcomeChat)
             {
-                chatManager.AddChatMessage("Welcome to Banana Mania Online! Press 'T' to type in the chat.");
+                chatManager.AddChatMessage("Welcome to Banana Mania Online!\nPress 'T' to type in the chat.\nPress F2 to show or hide the chat.");
                 hasShownWelcomeChat = true;
             }
             string outgoingMessage = chatManager.UpdateAndGetSubmittedChat();

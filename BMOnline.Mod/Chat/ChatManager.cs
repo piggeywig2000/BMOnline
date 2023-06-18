@@ -71,7 +71,8 @@ namespace BMOnline.Mod.Chat
             OnGUIEvent += HandleOnGUI;
         }
 
-        public bool IsOpen { get; private set; }
+        public bool IsOpen { get; private set; } = false;
+        public bool IsEnabled { get; private set; } = true;
 
         ~ChatManager()
         {
@@ -178,9 +179,37 @@ namespace BMOnline.Mod.Chat
             }
         }
 
+        private void Open()
+        {
+            IsOpen = true;
+            AppInputPatch.PreventKeyboardUpdate = true;
+            inputContainer.SetActive(true);
+            inputQueue.Clear();
+            RepositionMessageList();
+        }
+
+        private void Close()
+        {
+            IsOpen = false;
+            isClosing = true;
+            inputContainer.SetActive(false);
+            inputText.text = string.Empty;
+            cursorPosition = 0;
+            RepositionCursor();
+            RepositionMessageList();
+        }
+
         public string UpdateAndGetSubmittedChat()
         {
             UpdateChatMessages();
+
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                IsEnabled = !IsEnabled;
+                root.SetActive(IsEnabled);
+                if (!IsEnabled)
+                    Close();
+            }
 
             if (isClosing)
             {
@@ -192,37 +221,24 @@ namespace BMOnline.Mod.Chat
                 return null;
             }
 
+            if (!IsEnabled)
+                return null;
+
             //Open if t pressed
             if (!IsOpen)
             {
                 if (Input.GetKeyDown(KeyCode.T))
-                {
-                    IsOpen = true;
-                    AppInputPatch.PreventKeyboardUpdate = true;
-                    inputContainer.SetActive(true);
-                    inputQueue.Clear();
-                    RepositionMessageList();
-                }
+                    Open();
                 else return null;
             }
 
             //Close and maybe submit
             if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
-                IsOpen = false;
-                isClosing = true;
                 string submittedMessage = null;
-
                 if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && !string.IsNullOrWhiteSpace(inputText.text))
-                {
                     submittedMessage = inputText.text;
-                }
-
-                inputContainer.SetActive(false);
-                inputText.text = string.Empty;
-                cursorPosition = 0;
-                RepositionCursor();
-                RepositionMessageList();
+                Close();
                 return submittedMessage;
             }
 
