@@ -240,14 +240,7 @@ namespace BMOnline.Mod.Chat
                 char character = inputQueue.Dequeue();
                 if (character == '\t')
                     continue;
-                if (cursorPosition == inputText.text.Length)
-                {
-                    inputText.text = inputText.text.Substring(0, cursorPosition) + character;
-                }
-                else
-                {
-                    inputText.text = inputText.text.Substring(0, cursorPosition) + character + inputText.text.Substring(cursorPosition, inputText.text.Length - cursorPosition);
-                }
+                inputText.text = inputText.text.Substring(0, cursorPosition) + character + inputText.text.Substring(cursorPosition, inputText.text.Length - cursorPosition);
                 cursorPosition++;
                 RepositionCursor();
                 RepositionMessageList();
@@ -256,14 +249,7 @@ namespace BMOnline.Mod.Chat
             //Backspace
             if (backspaceTracker.UpdateAndGetState() && cursorPosition > 0)
             {
-                if (cursorPosition == inputText.text.Length)
-                {
-                    inputText.text = inputText.text.Substring(0, cursorPosition - 1);
-                }
-                else
-                {
-                    inputText.text = inputText.text.Substring(0, cursorPosition - 1) + inputText.text.Substring(cursorPosition, inputText.text.Length - cursorPosition);
-                }
+                inputText.text = inputText.text.Substring(0, cursorPosition - 1) + inputText.text.Substring(cursorPosition, inputText.text.Length - cursorPosition);
                 cursorPosition--;
                 RepositionCursor();
                 RepositionMessageList();
@@ -272,14 +258,7 @@ namespace BMOnline.Mod.Chat
             //Delete
             if (deleteTracker.UpdateAndGetState() && cursorPosition < inputText.text.Length)
             {
-                if (cursorPosition + 1 == inputText.text.Length)
-                {
-                    inputText.text = inputText.text.Substring(0, cursorPosition);
-                }
-                else
-                {
-                    inputText.text = inputText.text.Substring(0, cursorPosition) + inputText.text.Substring(cursorPosition + 1, inputText.text.Length - cursorPosition - 1);
-                }
+                inputText.text = inputText.text.Substring(0, cursorPosition) + inputText.text.Substring(cursorPosition + 1, inputText.text.Length - cursorPosition - 1);
                 RepositionCursor();
                 RepositionMessageList();
             }
