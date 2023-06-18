@@ -10,6 +10,8 @@ namespace BMOnline.Mod.Chat
 {
     internal class ChatManager
     {
+        private const int MAX_MESSAGES = 50;
+
         class GetCharacterBehaviour : MonoBehaviour
         {
             public GetCharacterBehaviour(IntPtr handle) : base(handle) { }
@@ -42,7 +44,7 @@ namespace BMOnline.Mod.Chat
 
         private readonly RectTransform messageListMask;
         private readonly Transform messageContainer;
-        private readonly List<ChatMessage> messageList = new List<ChatMessage>();
+        private readonly List<ChatMessage> messageList = new List<ChatMessage>(MAX_MESSAGES);
 
         private int cursorPosition = 0;
         private bool isClosing = false;
@@ -93,6 +95,11 @@ namespace BMOnline.Mod.Chat
 
         public void AddChatMessage(string message)
         {
+            if (messageList.Count == MAX_MESSAGES)
+            {
+                messageList[0].Destroy();
+                messageList.RemoveAt(0);
+            }
             ChatMessage newMessage = new ChatMessage(message, messageContainer);
             messageList.Add(newMessage);
         }

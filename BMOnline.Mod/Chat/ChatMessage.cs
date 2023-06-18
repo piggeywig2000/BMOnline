@@ -20,5 +20,7 @@ namespace BMOnline.Mod.Chat
             timeAlive += Time.unscaledDeltaTime;
             canvasGroup.alpha = isChatOpen ? 1 : Mathf.Lerp(1, 0, timeAlive - 10);
         }
+
+        public void Destroy() => GameObject.Destroy(canvasGroup.gameObject);
     }
 }
