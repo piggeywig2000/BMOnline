@@ -331,7 +331,7 @@ namespace BMOnline.Mod
                 if (client.State.IncomingChats != null && client.State.IncomingChats.HasReceivedChat)
                 {
                     string incomingMessage = client.State.IncomingChats.GetReceivedChat();
-                    Console.WriteLine(incomingMessage);
+                    chatManager.AddChatMessage(incomingMessage);
                 }
 
                 client.StateSemaphore.Release();

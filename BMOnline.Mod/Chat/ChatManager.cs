@@ -33,11 +33,16 @@ namespace BMOnline.Mod.Chat
         private static event EventHandler<GUIEventArgs> OnGUIEvent;
 
         private readonly GameObject root;
+
         private readonly GameObject inputContainer;
         private readonly GameObject input;
         private readonly Text inputText;
         private readonly RectTransform cursor;
         private readonly Text testText;
+
+        private readonly RectTransform messageListMask;
+        private readonly Transform messageContainer;
+        private readonly List<ChatMessage> messageList = new List<ChatMessage>();
 
         private int cursorPosition = 0;
         private bool isClosing = false;
@@ -53,11 +58,15 @@ namespace BMOnline.Mod.Chat
             root = UnityEngine.Object.Instantiate(AssetBundleItems.ChatPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
             ClassInjector.RegisterTypeInIl2Cpp<GetCharacterBehaviour>();
             root.AddComponent<GetCharacterBehaviour>();
+
             inputContainer = root.transform.Find("Background").gameObject;
             input = inputContainer.transform.Find("Input").gameObject;
             inputText = input.GetComponent<Text>();
             cursor = input.transform.Find("Cursor").GetComponent<RectTransform>();
             testText = input.transform.Find("TestText").GetComponent<Text>();
+
+            messageListMask = root.transform.Find("MessageListMask").GetComponent<RectTransform>();
+            messageContainer = messageListMask.Find("MessageList");
 
             OnGUIEvent += HandleOnGUI;
         }
@@ -79,7 +88,15 @@ namespace BMOnline.Mod.Chat
             }
         }
 
-        private void RepositionCursor()
+        private void UpdateChatMessages() => messageList.ForEach(m => m.Update(IsOpen));
+
+        public void AddChatMessage(string message)
+        {
+            ChatMessage newMessage = new ChatMessage(message, messageContainer);
+            messageList.Add(newMessage);
+        }
+
+        private List<string> CalculateLines()
         {
             List<string> lines = new List<string>();
             testText.text = string.Empty;
@@ -119,6 +136,12 @@ namespace BMOnline.Mod.Chat
             }
             if (testText.text.Length > 0)
                 lines.Add(testText.text);
+            return lines;
+        }
+
+        private void RepositionCursor()
+        {
+            List<string> lines = CalculateLines();
             float cursorX = 0;
             float cursorY = 0;
             if (lines.Count > 0)
@@ -138,13 +161,27 @@ namespace BMOnline.Mod.Chat
                 }
                 testText.text = lines[cursorLine].Substring(0, cursorPosition - lengthLinesBefore);
                 cursorX = testText.preferredWidth;
-                cursorY = inputText.fontSize * (lines.Count - cursorLine - 1);
+                cursorY = (inputText.fontSize + inputText.lineSpacing) * (lines.Count - cursorLine - 1);
             }
             cursor.localPosition = new Vector3(cursorX, cursorY);
         }
 
+        private void RepositionMessageList()
+        {
+            if (!IsOpen)
+            {
+                messageListMask.offsetMin = new Vector2(messageListMask.offsetMin.x, 50);
+            }
+            else
+            {
+                messageListMask.offsetMin = new Vector2(messageListMask.offsetMin.x, (50 - inputText.fontSize - inputText.lineSpacing) + ((inputText.fontSize + inputText.lineSpacing) * Math.Max(CalculateLines().Count, 1.0f)));
+            }
+        }
+
         public string UpdateAndGetSubmittedChat()
         {
+            UpdateChatMessages();
+
             if (isClosing)
             {
                 if (!Input.GetKey(KeyCode.Escape) && !Input.GetKey(KeyCode.Return) && !Input.GetKey(KeyCode.KeypadEnter))
@@ -164,6 +201,7 @@ namespace BMOnline.Mod.Chat
                     AppInputPatch.PreventKeyboardUpdate = true;
                     inputContainer.SetActive(true);
                     inputQueue.Clear();
+                    RepositionMessageList();
                 }
                 else return null;
             }
@@ -184,6 +222,7 @@ namespace BMOnline.Mod.Chat
                 inputText.text = string.Empty;
                 cursorPosition = 0;
                 RepositionCursor();
+                RepositionMessageList();
                 return submittedMessage;
             }
 
@@ -211,6 +250,7 @@ namespace BMOnline.Mod.Chat
                 }
                 cursorPosition++;
                 RepositionCursor();
+                RepositionMessageList();
             }
 
             //Backspace
@@ -226,6 +266,7 @@ namespace BMOnline.Mod.Chat
                 }
                 cursorPosition--;
                 RepositionCursor();
+                RepositionMessageList();
             }
 
             //Delete
@@ -240,6 +281,7 @@ namespace BMOnline.Mod.Chat
                     inputText.text = inputText.text.Substring(0, cursorPosition) + inputText.text.Substring(cursorPosition + 1, inputText.text.Length - cursorPosition - 1);
                 }
                 RepositionCursor();
+                RepositionMessageList();
             }
 
             //Right

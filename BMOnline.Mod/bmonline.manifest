@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 3785662847
+CRC: 2115729091
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 76e0918d0b7b9e157dfd377d0f6b34b2
+    Hash: 6f4cb2b3e07b05f60b39d3b1314d63e7
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 60801058023316738b54196b209d4435
+    Hash: eb99ddd077b5cbd8775a986765c239d2
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -32,6 +32,8 @@ ClassTypes:
 - Class: 114
   Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
 - Class: 114
+  Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
+- Class: 114
   Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
 - Class: 115
   Script: {instanceID: 0}
@@ -45,10 +47,13 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 224
   Script: {instanceID: 0}
+- Class: 225
+  Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/Prefabs/NameTag.prefab
 - Assets/Prefabs/Chat.prefab
 - Assets/Prefabs/ConnectStatus.prefab
+- Assets/Prefabs/ChatMessage.prefab
 - Assets/Prefabs/PlayerCount.prefab
 Dependencies: []

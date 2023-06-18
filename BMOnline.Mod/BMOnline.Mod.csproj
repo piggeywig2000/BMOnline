@@ -49,6 +49,9 @@
       <HintPath>$(ReferencePath)\UnityEngine.UI.dll</HintPath>
 	  <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\..\..\References\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BMOnline.Client\BMOnline.Client.csproj">
