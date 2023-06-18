@@ -7,21 +7,29 @@ Online multiplayer mod for Super Monkey Ball Banana Mania, MMO style. Everyone c
   - If you choose a DLC character, players that don't own the DLC may see AiAi or an untextured version of your character instead
 - The number of players in each stage is shown on the stage selection screen
   - The course and mode selection screens show the total number of players in every stage in that course or mode, with the exception of challenge mode, which shows the total number of players playing that challenge mode course
+- An in-game text chat
 
 ### Coming soon (hopefully)
 - A race mode, where all players are put into a random stage at the same time together and compete to reach the goal first
 - A time attack mode, where all players are put into a random stage at the same time together and have a few minutes to set the best time
-- An in-game text chat
 
 ## Installation
 Firstly, install the [Banana Mod Manager](https://github.com/MorsGames/BananaModManager) into the game's installation folder.
 
 Download the latest version of the mod from the [Releases](https://github.com/piggeywig2000/BMOnline/releases) page, and extract the zip into the "mods" folder inside the game's installation folder. Open Banana Mod Manager, make sure that the checkbox next to the mod is ticked, and run the game.
 
-## Mod incompatibilities
+### Mod incompatibilities
 This mod not compatible with the [Dynamic Sounds](https://gamebanana.com/mods/327614) or [Guest Character Voice Pack](https://gamebanana.com/mods/331507) mods. A fix for these is available [here](https://github.com/iswimfly/iswimflyBananaManiaMods/releases/download/MSF1.0/Multiplayer.Sound.Fixes.zip).
 
 Credit to snowman for the original mod and iswimfly for fixing them to work with this mod.
+
+## Controls
+This mod has some extra keyboard controls. Currently they can't be changed.
+
+- `T`: Open the chat to type and view older messages
+  - `Enter`: Send chat message and close the chat
+  - `Esc`: Close the chat without sending
+- `F2`: Toggle chat visibility. Use this if you don't want to see the chat
 
 ## Settings
 The mod settings can be changed in the Banana Mod Manager by clicking on the mod. If you'd like to just play the game online you don't need to worry about changing the mod settings, it should just work.
