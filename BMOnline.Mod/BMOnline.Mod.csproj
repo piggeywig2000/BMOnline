@@ -41,16 +41,19 @@
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(ReferencePath)\UnityEngine.IMGUIModule.dll</HintPath>
+	  <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(ReferencePath)\UnityEngine.InputLegacyModule.dll</HintPath>
+	  <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>$(ReferencePath)\UnityEngine.UI.dll</HintPath>
 	  <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\..\References\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(ReferencePath)\UnityEngine.UIModule.dll</HintPath>
+	  <Private>false</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
