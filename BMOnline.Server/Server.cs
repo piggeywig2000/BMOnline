@@ -127,7 +127,10 @@ namespace BMOnline.Server
             {
                 string content = user.IncomingChats.GetReceivedChat();
                 if (!string.IsNullOrWhiteSpace(content))
+                {
                     outgoingChats.SendChat($"[{user.Name}] {content}");
+                    Log.Info($"Chat: [{user.Name}] {content}");
+                }
             }
         }
 
