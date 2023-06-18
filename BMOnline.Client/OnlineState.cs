@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BMOnline.Common;
+using BMOnline.Common.Chat;
 using BMOnline.Common.Messaging;
 
 namespace BMOnline.Client
@@ -42,6 +43,9 @@ namespace BMOnline.Client
         public ushort OnlineCount { get; set; }
         public Dictionary<byte, ushort> CoursePlayerCounts { get; }
         public Dictionary<ushort, ushort> StagePlayerCounts { get; }
+
+        public OutgoingChatBuffer OutgoingChats { get; set; }
+        public IncomingChatBuffer IncomingChats { get; set; }
 
         public byte Course { get; set; }
         public ushort Stage { get; set; }

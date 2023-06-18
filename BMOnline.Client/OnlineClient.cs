@@ -18,6 +18,9 @@ namespace BMOnline.Client
         private readonly string password;
         private uint secret = 0;
 
+        private ushort outgoingChatIndex = 0;
+        private ushort incomingChatIndex = 0;
+
         public OnlineClient(IPAddress ip, ushort port, string name, string password) : base(new IPEndPoint(IPAddress.Any, 0))
         {
             serverEndpoint = new IPEndPoint(ip, port);
@@ -57,6 +60,10 @@ namespace BMOnline.Client
             {
                 await HandlePlayerDetails(playerDetailsMessage);
             }
+            else if (message is ChatMessage chatMessage)
+            {
+                await HandleChat(chatMessage);
+            }
             else
             {
                 return;
@@ -85,6 +92,12 @@ namespace BMOnline.Client
 
             await StateSemaphore.WaitAsync();
             State.OnlineCount = message.OnlineCount;
+            if (State.IncomingChats == null)
+            {
+                State.OutgoingChats = new Common.Chat.OutgoingChatBuffer();
+                State.IncomingChats = new Common.Chat.IncomingChatBuffer(message.LatestChatIndex);
+            }
+            State.OutgoingChats.SetRequestedIndex(message.RequestedChatIndex);
             StateSemaphore.Release();
         }
 
@@ -131,8 +144,19 @@ namespace BMOnline.Client
             StateSemaphore.Release();
         }
 
+        private async Task HandleChat(ChatMessage message)
+        {
+            if (message.Secret != secret) return;
+
+            await StateSemaphore.WaitAsync();
+            State.IncomingChats?.ReceiveChatFromRemote(message.Index, message.Content);
+            StateSemaphore.Release();
+        }
+
         protected override async Task SendTick()
         {
+            await StateSemaphore.WaitAsync();
+
             //Check if we need to log in
             if (isLoggedIn && Time - lastPacketReceived > TimeSpan.FromSeconds(5))
             {
@@ -142,6 +166,9 @@ namespace BMOnline.Client
                     Log.Warning("Connection timed out, logging back in");
                 isLoggedIn = false;
                 secret = (uint)secretGenerator.Next();
+                //Reset chat buffers
+                State.OutgoingChats = null;
+                State.IncomingChats = null;
             }
 
             //If we're not logged in, send a login message
@@ -158,13 +185,13 @@ namespace BMOnline.Client
             }
             else
             {
-                await StateSemaphore.WaitAsync();
                 if (State.Location == OnlineState.OnlineLocation.Menu)
                 {
                     //Send status. For now this just acts as a keepalive to stop us getting disconnected
                     byte[] statusBytes = new MenuStatusMessage()
                     {
-                        Secret = secret
+                        Secret = secret,
+                        RequestedChatIndex = State.IncomingChats?.IndexToRequest ?? 0
                     }.Encode();
                     await SendAsync(statusBytes, serverEndpoint);
                 }
@@ -174,6 +201,7 @@ namespace BMOnline.Client
                     byte[] statusBytes = new GameStatusMessage()
                     {
                         Secret = secret,
+                        RequestedChatIndex = State.IncomingChats?.IndexToRequest ?? 0,
                         Course = State.Course,
                         Stage = State.Stage,
                         Tick = CurrentTick,
@@ -197,8 +225,22 @@ namespace BMOnline.Client
                         await SendAsync(requestBytes, serverEndpoint);
                     }
                 }
-                StateSemaphore.Release();
+
+                //Send a chat message
+                string outgoingChat = State.OutgoingChats?.GetChatAtIndex(State.OutgoingChats.RequestedIndex);
+                if (outgoingChat != null)
+                {
+                    byte[] chatBytes = new ChatMessage()
+                    {
+                        Secret = secret,
+                        Index = State.OutgoingChats.RequestedIndex,
+                        Content = outgoingChat
+                    }.Encode();
+                    await SendAsync(chatBytes, serverEndpoint);
+                }
             }
+
+            StateSemaphore.Release();
         }
     }
 }

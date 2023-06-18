@@ -39,7 +39,6 @@ namespace BMOnline.Mod.Chat
         private readonly RectTransform cursor;
         private readonly Text testText;
 
-        private readonly Queue<string> sentQueue = new Queue<string>();
         private int cursorPosition = 0;
         private bool isClosing = false;
         private float cursorBlinkTimer = 0;
@@ -70,16 +69,12 @@ namespace BMOnline.Mod.Chat
             OnGUIEvent -= HandleOnGUI;
         }
 
-        public bool HasSentMessage => sentQueue.Count > 0;
-        public string GetSentMessage() => sentQueue.Dequeue();
-
         private void HandleOnGUI(object s, GUIEventArgs eventArgs)
         {
             if (!IsOpen) return;
             Event e = eventArgs.GuiEvent;
             if (e.isKey && e.character != 0)
             {
-                Console.WriteLine((ushort)e.character);
                 inputQueue.Enqueue(e.character);
             }
         }
@@ -148,7 +143,7 @@ namespace BMOnline.Mod.Chat
             cursor.localPosition = new Vector3(cursorX, cursorY);
         }
 
-        public void Update()
+        public string UpdateAndGetSubmittedChat()
         {
             if (isClosing)
             {
@@ -157,7 +152,7 @@ namespace BMOnline.Mod.Chat
                     isClosing = false;
                     AppInputPatch.PreventKeyboardUpdate = false;
                 }
-                return;
+                return null;
             }
 
             //Open if t pressed
@@ -170,7 +165,7 @@ namespace BMOnline.Mod.Chat
                     inputContainer.SetActive(true);
                     inputQueue.Clear();
                 }
-                else return;
+                else return null;
             }
 
             //Close and maybe submit
@@ -178,18 +173,18 @@ namespace BMOnline.Mod.Chat
             {
                 IsOpen = false;
                 isClosing = true;
+                string submittedMessage = null;
 
                 if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && !string.IsNullOrWhiteSpace(inputText.text))
                 {
-                    Console.WriteLine($"Submitting text: {inputText.text}");
-                    sentQueue.Enqueue(inputText.text);
+                    submittedMessage = inputText.text;
                 }
 
                 inputContainer.SetActive(false);
                 inputText.text = string.Empty;
                 cursorPosition = 0;
                 RepositionCursor();
-                return;
+                return submittedMessage;
             }
 
             //Cursor blink animation
@@ -274,6 +269,8 @@ namespace BMOnline.Mod.Chat
                 cursorPosition = inputText.text.Length;
                 RepositionCursor();
             }
+
+            return null;
         }
     }
 }

@@ -17,47 +17,49 @@ namespace BMOnline.Common.Messaging
         protected override void DecodeMessage(byte[] data)
         {
             base.DecodeMessage(data);
-            Course = data[4];
-            Stage = BitConverter.ToUInt16(data, 5);
-            Tick = BitConverter.ToUInt32(data, 7);
-            Position = (BitConverter.ToSingle(data, 11), BitConverter.ToSingle(data, 15), BitConverter.ToSingle(data, 19));
-            AngularVelocity = (BitConverter.ToSingle(data, 23), BitConverter.ToSingle(data, 27), BitConverter.ToSingle(data, 31));
-            MotionState = data[35];
-            Character = data[36];
+            int baseLength = data.Length - 53;
+            Course = data[baseLength];
+            Stage = BitConverter.ToUInt16(data, baseLength + 1);
+            Tick = BitConverter.ToUInt32(data, baseLength + 3);
+            Position = (BitConverter.ToSingle(data, baseLength + 7), BitConverter.ToSingle(data, baseLength + 11), BitConverter.ToSingle(data, baseLength + 15));
+            AngularVelocity = (BitConverter.ToSingle(data, baseLength + 19), BitConverter.ToSingle(data, baseLength + 23), BitConverter.ToSingle(data, baseLength + 27));
+            MotionState = data[baseLength + 31];
+            Character = data[baseLength + 32];
             CustomisationsNum = new byte[10];
             for (int i = 0; i < 10; i++)
             {
-                CustomisationsNum[i] = data[37 + i];
+                CustomisationsNum[i] = data[baseLength + 33 + i];
             }
             CustomisationsChara = new byte[10];
             for (int i = 0; i < 10; i++)
             {
-                CustomisationsChara[i] = data[47 + i];
+                CustomisationsChara[i] = data[baseLength + 43 + i];
             }
         }
 
         protected override byte[] EncodeMessage()
         {
-            byte[] output = new byte[57];
-            base.EncodeMessage().CopyTo(output, 0);
-            output[4] = Course;
-            BitConverter.GetBytes(Stage).CopyTo(output, 5);
-            BitConverter.GetBytes(Tick).CopyTo(output, 7);
-            BitConverter.GetBytes(Position.Item1).CopyTo(output, 11);
-            BitConverter.GetBytes(Position.Item2).CopyTo(output, 15);
-            BitConverter.GetBytes(Position.Item3).CopyTo(output, 19);
-            BitConverter.GetBytes(AngularVelocity.Item1).CopyTo(output, 23);
-            BitConverter.GetBytes(AngularVelocity.Item2).CopyTo(output, 27);
-            BitConverter.GetBytes(AngularVelocity.Item3).CopyTo(output, 31);
-            output[35] = MotionState;
-            output[36] = Character;
+            byte[] baseData = base.EncodeMessage();
+            byte[] output = new byte[baseData.Length + 53];
+            baseData.CopyTo(output, 0);
+            output[baseData.Length] = Course;
+            BitConverter.GetBytes(Stage).CopyTo(output, baseData.Length + 1);
+            BitConverter.GetBytes(Tick).CopyTo(output, baseData.Length + 3);
+            BitConverter.GetBytes(Position.Item1).CopyTo(output, baseData.Length + 7);
+            BitConverter.GetBytes(Position.Item2).CopyTo(output, baseData.Length + 11);
+            BitConverter.GetBytes(Position.Item3).CopyTo(output, baseData.Length + 15);
+            BitConverter.GetBytes(AngularVelocity.Item1).CopyTo(output, baseData.Length + 19);
+            BitConverter.GetBytes(AngularVelocity.Item2).CopyTo(output, baseData.Length + 23);
+            BitConverter.GetBytes(AngularVelocity.Item3).CopyTo(output, baseData.Length + 27);
+            output[baseData.Length + 31] = MotionState;
+            output[baseData.Length + 32] = Character;
             for (int i = 0; i < 10; i++)
             {
-                output[37 + i] = CustomisationsNum[i];
+                output[baseData.Length + 33 + i] = CustomisationsNum[i];
             }
             for (int i = 0; i < 10; i++)
             {
-                output[47 + i] = CustomisationsChara[i];
+                output[baseData.Length + 43 + i] = CustomisationsChara[i];
             }
             return output;
         }

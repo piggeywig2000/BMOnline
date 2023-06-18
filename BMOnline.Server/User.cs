@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using BMOnline.Common.Chat;
 
 namespace BMOnline.Server
 {
@@ -16,6 +17,7 @@ namespace BMOnline.Server
             Name = name;
             EndPoint = endPoint;
             RequestedPlayerIds = new List<ushort>();
+            IncomingChats = new IncomingChatBuffer(0);
 
             Location = UserLocation.Menu;
             Course = byte.MaxValue;
@@ -34,6 +36,9 @@ namespace BMOnline.Server
         public IPEndPoint EndPoint { get; }
         public TimeSpan LastPacketReceived { get; private set; }
         public List<ushort> RequestedPlayerIds { get; }
+
+        public byte RequestedChatIndex { get; set; }
+        public IncomingChatBuffer IncomingChats { get; }
 
         public UserLocation Location { get; set; }
         public byte Course { get; set; }

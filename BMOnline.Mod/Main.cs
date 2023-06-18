@@ -214,7 +214,7 @@ namespace BMOnline.Mod
             connectStateManager.SetVisibility(!isInGame || Pause.isEnable);
 
             //Update chat
-            chatManager.Update();
+            string outgoingMessage = chatManager.UpdateAndGetSubmittedChat();
 
             if (client.StateSemaphore.Wait(0))
             {
@@ -323,6 +323,15 @@ namespace BMOnline.Mod
                 {
                     //Update player counts
                     playerCountManager.UpdatePlayerCounts(client.State.CoursePlayerCounts, client.State.StagePlayerCounts, courseDataManager, client.CurrentTick);
+                }
+
+                //Send/receive chats
+                if (outgoingMessage != null && client.State.OutgoingChats != null)
+                    client.State.OutgoingChats.SendChat(outgoingMessage);
+                if (client.State.IncomingChats != null && client.State.IncomingChats.HasReceivedChat)
+                {
+                    string incomingMessage = client.State.IncomingChats.GetReceivedChat();
+                    Console.WriteLine(incomingMessage);
                 }
 
                 client.StateSemaphore.Release();

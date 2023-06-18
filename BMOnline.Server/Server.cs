@@ -1,5 +1,7 @@
 ﻿using System.Net;
+using System.Net.Sockets;
 using BMOnline.Common;
+using BMOnline.Common.Chat;
 using BMOnline.Common.Messaging;
 
 namespace BMOnline.Server
@@ -9,12 +11,14 @@ namespace BMOnline.Server
         private readonly UserManager userManager;
         private readonly string? password;
         private readonly List<(IPEndPoint, uint, LoginRefuseReason)> loginRefusals;
+        private readonly OutgoingChatBuffer outgoingChats;
 
         public Server(IPEndPoint localEP, string? password) : base(localEP)
         {
             userManager = new UserManager();
             this.password = password;
             loginRefusals = new List<(IPEndPoint, uint, LoginRefuseReason)>();
+            outgoingChats = new OutgoingChatBuffer();
         }
         public Server(IPEndPoint localEP) : this(localEP, null) { }
 
@@ -32,6 +36,10 @@ namespace BMOnline.Server
             else if (message is GetPlayerDetailsMessage getPlayerDetailsMessage)
             {
                 HandleGetPlayerDetails(getPlayerDetailsMessage);
+            }
+            else if (message is ChatMessage chatMessage)
+            {
+                HandleChat(chatMessage);
             }
             return Task.CompletedTask;
         }
@@ -56,12 +64,7 @@ namespace BMOnline.Server
             }
 
             //Clean name
-            message.Name = message.Name
-                .Replace('\n', ' ')
-                .Replace('\r', ' ')
-                .Replace('\t', ' ')
-                .Replace('\f', ' ')
-                .Trim();
+            message.Name = message.Name.RemoveWhitespace();
 
             //Name cannot be longer than 32 characters and must be longer than 0 characters
             if (message.Name.Length > 32 || message.Name.Length == 0)
@@ -81,6 +84,7 @@ namespace BMOnline.Server
                 return; //If user not found, drop packet
 
             user.Renew(Time);
+            user.RequestedChatIndex = message.RequestedChatIndex;
             if (message is MenuStatusMessage)
             {
                 userManager.MoveUserToMenu(user);
@@ -112,6 +116,18 @@ namespace BMOnline.Server
             }
         }
 
+        private void HandleChat(ChatMessage message)
+        {
+            if (!userManager.TryGetUserFromSecret(message.Secret, out User? user))
+                return; //If user not found, drop packet
+            user.Renew(Time);
+            user.IncomingChats.ReceiveChatFromRemote(message.Index, message.Content.RemoveWhitespace());
+            if (user.IncomingChats.HasReceivedChat)
+            {
+                outgoingChats.SendChat($"[{user.Name}] {user.IncomingChats.GetReceivedChat()}");
+            }
+        }
+
         protected override async Task SendTick()
         {
             userManager.RemoveExpired(Time);
@@ -136,7 +152,9 @@ namespace BMOnline.Server
                 byte[] gimBytes = new GlobalInfoMessage()
                 {
                     Secret = user.Secret,
-                    OnlineCount = (ushort)userManager.TotalCount
+                    OnlineCount = (ushort)userManager.TotalCount,
+                    LatestChatIndex = outgoingChats.LatestIndex,
+                    RequestedChatIndex = user.IncomingChats.IndexToRequest
                 }.Encode();
                 await SendAsync(gimBytes, user.EndPoint);
 
@@ -191,6 +209,19 @@ namespace BMOnline.Server
                             await SendAsync(detailBytes, user.EndPoint);
                         }
                     }
+                }
+
+                //Send chat
+                string outgoingChat = outgoingChats.GetChatAtIndex(user.RequestedChatIndex);
+                if (outgoingChat != null)
+                {
+                    byte[] chatBytes = new ChatMessage()
+                    {
+                        Secret = user.Secret,
+                        Index = user.RequestedChatIndex,
+                        Content = outgoingChat
+                    }.Encode();
+                    await SendAsync(chatBytes, user.EndPoint);
                 }
             }
         }

@@ -5,16 +5,19 @@ namespace BMOnline.Common.Messaging
     public abstract class StatusMessage : Message
     {
         public uint Secret { get; set; }
+        public byte RequestedChatIndex { get; set; }
 
         protected override void DecodeMessage(byte[] data)
         {
             Secret = BitConverter.ToUInt32(data, 0);
+            RequestedChatIndex = data[4];
         }
 
         protected override byte[] EncodeMessage()
         {
-            byte[] output = new byte[4];
+            byte[] output = new byte[5];
             BitConverter.GetBytes(Secret).CopyTo(output, 0);
+            output[4] = RequestedChatIndex;
             return output;
         }
     }

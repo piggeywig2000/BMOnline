@@ -37,6 +37,9 @@ namespace BMOnline.Common.Messaging
                 case MessageType.PlayerDetails:
                     returnMessage = new PlayerDetailsMessage();
                     break;
+                case MessageType.Chat:
+                    returnMessage = new ChatMessage();
+                    break;
                 default:
                     throw new InvalidOperationException("Message type to decode is not supported");
             };
@@ -68,6 +71,7 @@ namespace BMOnline.Common.Messaging
             else if (this is PlayerCountMessage) type = MessageType.PlayerCount;
             else if (this is StageUpdateMessage) type = MessageType.StageUpdate;
             else if (this is PlayerDetailsMessage) type = MessageType.PlayerDetails;
+            else if (this is ChatMessage) type = MessageType.Chat;
             else throw new InvalidOperationException("Message type to encode is not supported");
 
             output = new byte[messageData.Length + 1];
@@ -92,6 +96,7 @@ namespace BMOnline.Common.Messaging
             PlayerCount,
             StageUpdate,
             PlayerDetails,
+            Chat,
             Unknown = byte.MaxValue
         }
     }
