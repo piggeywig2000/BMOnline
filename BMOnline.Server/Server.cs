@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Sockets;
 using BMOnline.Common;
 using BMOnline.Common.Chat;
 using BMOnline.Common.Messaging;

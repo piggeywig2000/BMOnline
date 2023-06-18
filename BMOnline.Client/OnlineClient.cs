@@ -18,9 +18,6 @@ namespace BMOnline.Client
         private readonly string password;
         private uint secret = 0;
 
-        private ushort outgoingChatIndex = 0;
-        private ushort incomingChatIndex = 0;
-
         public OnlineClient(IPAddress ip, ushort port, string name, string password) : base(new IPEndPoint(IPAddress.Any, 0))
         {
             serverEndpoint = new IPEndPoint(ip, port);
