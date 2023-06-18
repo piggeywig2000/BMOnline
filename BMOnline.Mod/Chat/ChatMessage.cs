@@ -18,7 +18,12 @@ namespace BMOnline.Mod.Chat
         public void Update(bool isChatOpen)
         {
             timeAlive += Time.unscaledDeltaTime;
-            canvasGroup.alpha = isChatOpen ? 1 : Mathf.Lerp(1, 0, timeAlive - 10);
+            float newAlpha = isChatOpen ? 1 : Mathf.Lerp(1, 0, timeAlive - 10);
+            if (canvasGroup.alpha != newAlpha)
+            {
+                canvasGroup.alpha = newAlpha;
+                canvasGroup.gameObject.SetActive(newAlpha > 0);
+            }
         }
 
         public void Destroy() => GameObject.Destroy(canvasGroup.gameObject);
