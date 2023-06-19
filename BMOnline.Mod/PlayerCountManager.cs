@@ -135,7 +135,16 @@ namespace BMOnline.Mod
         public PlayerCountManager(ModSettings settings)
         {
             this.settings = settings;
-            settings.OnSettingChanged += HandleOnSettingChanged;
+            settings.OnSettingChanged += (s, e) =>
+            {
+                if (e.SettingChanged == ModSettings.Setting.PlayerCounts)
+                {
+                    if (settings.ShowPlayerCounts)
+                        RecreatePlayerCountsIfNeeded();
+                    else
+                        DestroyAllItems();
+                }
+            };
 
             Transform uiList = AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform;
             counts = new IPlayerCountSet<object>[]
@@ -305,22 +314,6 @@ namespace BMOnline.Mod
                     return 0;
                 })
             };
-        }
-
-        ~PlayerCountManager()
-        {
-            settings.OnSettingChanged -= HandleOnSettingChanged;
-        }
-
-        private void HandleOnSettingChanged(object s, ModSettings.OnSettingChangedEventArgs e)
-        {
-            if (e.SettingChanged == ModSettings.Setting.PlayerCounts)
-            {
-                if (settings.ShowPlayerCounts)
-                    RecreatePlayerCountsIfNeeded();
-                else
-                    DestroyAllItems();
-            }
         }
 
         private IEnumerable<int> GetStagesInCourse(MainGameDef.eCourse course)

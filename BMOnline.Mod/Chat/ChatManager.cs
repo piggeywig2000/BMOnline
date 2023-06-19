@@ -70,26 +70,19 @@ namespace BMOnline.Mod.Chat
             messageListMask = root.transform.Find("MessageListMask").GetComponent<RectTransform>();
             messageContainer = messageListMask.Find("MessageList");
 
-            OnGUIEvent += HandleOnGUI;
+            OnGUIEvent += (s, eventArgs) =>
+            {
+                if (!IsOpen) return;
+                Event e = eventArgs.GuiEvent;
+                if (e.isKey && e.character != 0)
+                {
+                    inputQueue.Enqueue(e.character);
+                }
+            };
         }
 
         public bool IsOpen { get; private set; } = false;
         public bool IsEnabled { get; private set; } = true;
-
-        ~ChatManager()
-        {
-            OnGUIEvent -= HandleOnGUI;
-        }
-
-        private void HandleOnGUI(object s, GUIEventArgs eventArgs)
-        {
-            if (!IsOpen) return;
-            Event e = eventArgs.GuiEvent;
-            if (e.isKey && e.character != 0)
-            {
-                inputQueue.Enqueue(e.character);
-            }
-        }
 
         private void UpdateChatMessages() => messageList.ForEach(m => m.Update(IsOpen));
 
