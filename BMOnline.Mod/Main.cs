@@ -22,11 +22,8 @@ namespace BMOnline.Mod
         private static bool hasFatalErrored = false;
         private static bool hasShownWelcomeChat = false;
 
-        private static IPAddress serverIpAddress = null;
-        private static ushort serverPort = 10998;
-        private static string serverPassword = null;
-        private static bool showPlayerCounts = true;
-        private static bool showUsernames = true;
+        private static Dictionary<string, object> settingsDict;
+        private static ModSettings settings;
 
         private static ConnectStateManager connectStateManager;
         private static PlayerCountManager playerCountManager;
@@ -49,48 +46,10 @@ namespace BMOnline.Mod
         public static bool wasMainStageDestroyed = false;
         public static bool wasMainStageReset = false;
 
-        public static void OnModLoad(Dictionary<string, object> settings)
+        public static void OnModLoad(Dictionary<string, object> settingsDict)
         {
             Log.Info("Loading online multiplayer mod");
-            //Get server address
-            try
-            {
-                if (settings.TryGetValue("ServerIP", out object objIp) && objIp is string strIp && !string.IsNullOrWhiteSpace(strIp))
-                {
-                    if (IPAddress.TryParse(strIp, out IPAddress ip))
-                        serverIpAddress = ip;
-                    else
-                    {
-                        serverIpAddress = Dns.GetHostAddresses(strIp).FirstOrDefault();
-                    }
-                }
-            }
-            catch (Exception) { }
-            //If no IP address specified use piggeywig2000.com, or localhost if DNS don't work for some reason
-#if !DEBUG
-            serverIpAddress ??= Dns.GetHostAddresses("piggeywig2000.com").FirstOrDefault();
-#endif
-            serverIpAddress ??= IPAddress.Loopback;
-            if (settings.TryGetValue("ServerPort", out object objPort) && objPort is string strPort && !string.IsNullOrWhiteSpace(strPort) && ushort.TryParse(strPort, out ushort port))
-            {
-                serverPort = port;
-            }
-            if (settings.TryGetValue("ServerPassword", out object objPassword) && objPassword is string pasword && !string.IsNullOrWhiteSpace(pasword))
-            {
-                serverPassword = pasword;
-            }
-            Log.Config($"Server IP: {serverIpAddress}    Server Port: {serverPort}    Password Provided: {(serverPassword != null ? "Yes" : "No")}");
-            //Get settings
-            if (settings.TryGetValue("ShowPlayerCounts", out object objShowPlayerCounts) && objShowPlayerCounts is bool showPlayerCounts)
-            {
-                Main.showPlayerCounts = showPlayerCounts;
-            }
-            Log.Config(Main.showPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
-            if (settings.TryGetValue("ShowUsernames", out object objShowUsernames) && objShowUsernames is bool showUsernames)
-            {
-                Main.showUsernames = showUsernames;
-            }
-            Log.Config(Main.showUsernames ? "Usernames: Visible" : "Usernames: Hidden");
+            Main.settingsDict = settingsDict;
         }
 
         public static void OnModLateUpdate()
@@ -130,6 +89,8 @@ namespace BMOnline.Mod
                 chatManager = new ChatManager();
                 courseDataManager = GameObject.Find("MgCourseDataManager").GetComponent<MgCourseDataManager>();
 
+                settings = new ModSettings(settingsDict);
+
                 string name = SteamManager.GetFriendsHandler().GetPersonaName();
                 if (string.IsNullOrWhiteSpace(name))
                     name = "Player";
@@ -137,7 +98,7 @@ namespace BMOnline.Mod
                     name = name.Substring(0, 32);
                 try
                 {
-                    client = new OnlineClient(serverIpAddress, serverPort, name, serverPassword);
+                    client = new OnlineClient(settings.ServerIpAddress, settings.ServerPort, name, settings.ServerPassword);
                 }
                 catch (SocketException e)
                 {
@@ -203,7 +164,7 @@ namespace BMOnline.Mod
                 }
             }
 
-            if (!isInGame && showPlayerCounts)
+            if (!isInGame && settings.ShowPlayerCounts)
             {
                 //Recreate player count objects if needed
                 playerCountManager.RecreatePlayerCountsIfNeeded();
@@ -296,7 +257,7 @@ namespace BMOnline.Mod
 
                         if (!CharaCustomizeManager.isBusy && !MgCharaManager.isBusy)
                         {
-                            netPlayer.Instantiate(objRoot, mainGameStage, showUsernames);
+                            netPlayer.Instantiate(objRoot, mainGameStage, settings.ShowUsernames);
                             loadedPlayers.Add(playerId);
                         }
                     }
@@ -325,7 +286,7 @@ namespace BMOnline.Mod
                     }
                 }
 
-                if (!isInGame && showPlayerCounts)
+                if (!isInGame && settings.ShowPlayerCounts)
                 {
                     //Update player counts
                     playerCountManager.UpdatePlayerCounts(client.State.CoursePlayerCounts, client.State.StagePlayerCounts, courseDataManager, client.CurrentTick);
@@ -353,7 +314,7 @@ namespace BMOnline.Mod
                     netPlayer.GravityTilt.update();
                     netPlayer.PhysicalTransform.localPosition = netPlayer.BehaviourTransform.localPosition;
 
-                    if (showUsernames)
+                    if (settings.ShowUsernames)
                     {
                         netPlayer.NameTag.transform.localPosition = netPlayer.BehaviourTransform.localPosition + (MainGame.isViewStage ? new Vector3(0, 3f, 0) : new Vector3(0, 1f, 0));
                         Vector3 lookAtPos = MainGame.isViewStage ? MainGame.Instance.m_viewStageCamera.transform.position : mainGameStage.m_CameraController.GetMainCamera().transform.position;
