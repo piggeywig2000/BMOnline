@@ -23,5 +23,10 @@
     "Value": true,
     "Description": "Whether to show the number of players playing each stage on the stage selection screen.",
     "Category": "In-Game Settings"
+  },
+  "EnableChat": {
+    "Value": true,
+    "Description": "Whether to show chat messages. If this is disabled you will not be able to send or receive chat messages.",
+    "Category": "In-Game Settings"
   }
 }

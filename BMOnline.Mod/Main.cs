@@ -90,7 +90,7 @@ namespace BMOnline.Mod
 
                 connectStateManager = new ConnectStateManager();
                 playerCountManager = new PlayerCountManager(settings);
-                chatManager = new ChatManager();
+                chatManager = new ChatManager(settings);
                 courseDataManager = GameObject.Find("MgCourseDataManager").GetComponent<MgCourseDataManager>();
 
                 string name = SteamManager.GetFriendsHandler().GetPersonaName();

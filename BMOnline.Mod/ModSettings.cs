@@ -52,6 +52,11 @@ namespace BMOnline.Mod
                 this.showPlayerCounts = showPlayerCounts;
             }
             Log.Config(ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
+            if (settings.TryGetValue("EnableChat", out object objEnableChat) && objEnableChat is bool enableChat)
+            {
+                this.enableChat = enableChat;
+            }
+            Log.Config(EnableChat ? "Chat: Enabled" : "Chat: Disabled");
         }
 
         public IPAddress ServerIpAddress { get; private set; } = null;
@@ -65,7 +70,7 @@ namespace BMOnline.Mod
             set
             {
                 showNameTags = value;
-                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.NameTags));
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.ShowNameTags));
             }
         }
 
@@ -76,7 +81,18 @@ namespace BMOnline.Mod
             set
             {
                 showPlayerCounts = value;
-                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.PlayerCounts));
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.ShowPlayerCounts));
+            }
+        }
+
+        private bool enableChat = true;
+        public bool EnableChat
+        {
+            get => enableChat;
+            set
+            {
+                enableChat = value;
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.EnableChat));
             }
         }
 
@@ -85,8 +101,9 @@ namespace BMOnline.Mod
             ServerIpAddress,
             ServerPort,
             ServerPassword,
-            NameTags,
-            PlayerCounts
+            ShowNameTags,
+            ShowPlayerCounts,
+            EnableChat
         }
         public class OnSettingChangedEventArgs : EventArgs
         {
@@ -108,6 +125,10 @@ namespace BMOnline.Mod
             if (Input.GetKeyDown(KeyCode.F3))
             {
                 ShowPlayerCounts = !ShowPlayerCounts;
+            }
+            if (Input.GetKeyDown(KeyCode.F4))
+            {
+                EnableChat = !EnableChat;
             }
         }
     }

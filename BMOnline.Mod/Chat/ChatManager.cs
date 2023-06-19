@@ -34,6 +34,8 @@ namespace BMOnline.Mod.Chat
         }
         private static event EventHandler<GUIEventArgs> OnGUIEvent;
 
+        private readonly ModSettings settings;
+
         private readonly GameObject root;
 
         private readonly GameObject inputContainer;
@@ -55,8 +57,10 @@ namespace BMOnline.Mod.Chat
         private readonly SpamTracker rightTracker = new SpamTracker(KeyCode.RightArrow);
         private readonly SpamTracker leftTracker = new SpamTracker(KeyCode.LeftArrow);
 
-        public ChatManager()
+        public ChatManager(ModSettings settings)
         {
+            this.settings = settings;
+
             root = UnityEngine.Object.Instantiate(AssetBundleItems.ChatPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
             ClassInjector.RegisterTypeInIl2Cpp<GetCharacterBehaviour>();
             root.AddComponent<GetCharacterBehaviour>();
@@ -79,10 +83,19 @@ namespace BMOnline.Mod.Chat
                     inputQueue.Enqueue(e.character);
                 }
             };
+
+            settings.OnSettingChanged += (s, e) =>
+            {
+                if (e.SettingChanged == ModSettings.Setting.EnableChat)
+                {
+                    root.SetActive(settings.EnableChat);
+                    if (!settings.EnableChat)
+                        Close();
+                }
+            };
         }
 
         public bool IsOpen { get; private set; } = false;
-        public bool IsEnabled { get; private set; } = true;
 
         private void UpdateChatMessages() => messageList.ForEach(m => m.Update(IsOpen));
 
@@ -203,14 +216,6 @@ namespace BMOnline.Mod.Chat
         {
             UpdateChatMessages();
 
-            if (Input.GetKeyDown(KeyCode.F4))
-            {
-                IsEnabled = !IsEnabled;
-                root.SetActive(IsEnabled);
-                if (!IsEnabled)
-                    Close();
-            }
-
             if (isClosing)
             {
                 if (!Input.GetKey(KeyCode.Escape) && !Input.GetKey(KeyCode.Return) && !Input.GetKey(KeyCode.KeypadEnter))
@@ -221,7 +226,7 @@ namespace BMOnline.Mod.Chat
                 return null;
             }
 
-            if (!IsEnabled)
+            if (!settings.EnableChat)
                 return null;
 
             //Open if t pressed

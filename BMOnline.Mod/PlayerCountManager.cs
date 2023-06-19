@@ -137,7 +137,7 @@ namespace BMOnline.Mod
             this.settings = settings;
             settings.OnSettingChanged += (s, e) =>
             {
-                if (e.SettingChanged == ModSettings.Setting.PlayerCounts)
+                if (e.SettingChanged == ModSettings.Setting.ShowPlayerCounts)
                 {
                     if (settings.ShowPlayerCounts)
                         RecreatePlayerCountsIfNeeded();
