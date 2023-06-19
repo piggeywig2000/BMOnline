@@ -210,7 +210,7 @@ namespace BMOnline.Mod.Chat
         {
             UpdateChatMessages();
 
-            if (Input.GetKeyDown(KeyCode.F2))
+            if (Input.GetKeyDown(KeyCode.F4))
             {
                 IsEnabled = !IsEnabled;
                 root.SetActive(IsEnabled);
