@@ -14,14 +14,14 @@
     "Description": "The password for the custom server. Leave it empty if the server doesn't have a password.",
     "Category": "Custom Server"
   },
-  "ShowPlayerCounts": {
-    "Value": true,
-    "Description": "Whether to show the number of players playing each stage on the stage selection screen.",
-    "Category": "In-Game Settings"
-  },
   "ShowNameTags": {
     "Value": true,
     "Description": "Whether to show the username of the player above their ball.",
+    "Category": "In-Game Settings"
+  },
+  "ShowPlayerCounts": {
+    "Value": true,
+    "Description": "Whether to show the number of players playing each stage on the stage selection screen.",
     "Category": "In-Game Settings"
   }
 }

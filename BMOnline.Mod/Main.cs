@@ -54,6 +54,8 @@ namespace BMOnline.Mod
 
         public static void OnModLateUpdate()
         {
+            settings?.CheckHotkeys();
+
             //Check for fatal networking errors
             if (hasFatalErrored)
             {
@@ -84,12 +86,12 @@ namespace BMOnline.Mod
                 PlayerMotionPatch.CreateDetour();
                 AppInputPatch.CreateDetour();
 
+                settings = new ModSettings(settingsDict);
+
                 connectStateManager = new ConnectStateManager();
-                playerCountManager = new PlayerCountManager();
+                playerCountManager = new PlayerCountManager(settings);
                 chatManager = new ChatManager();
                 courseDataManager = GameObject.Find("MgCourseDataManager").GetComponent<MgCourseDataManager>();
-
-                settings = new ModSettings(settingsDict);
 
                 string name = SteamManager.GetFriendsHandler().GetPersonaName();
                 if (string.IsNullOrWhiteSpace(name))
@@ -164,7 +166,7 @@ namespace BMOnline.Mod
                 }
             }
 
-            if (!isInGame && settings.ShowPlayerCounts)
+            if (!isInGame)
             {
                 //Recreate player count objects if needed
                 playerCountManager.RecreatePlayerCountsIfNeeded();
@@ -257,7 +259,7 @@ namespace BMOnline.Mod
 
                         if (!CharaCustomizeManager.isBusy && !MgCharaManager.isBusy)
                         {
-                            netPlayer.Instantiate(objRoot, mainGameStage, settings.ShowNameTags);
+                            netPlayer.Instantiate(objRoot, mainGameStage);
                             loadedPlayers.Add(playerId);
                         }
                     }
@@ -286,7 +288,7 @@ namespace BMOnline.Mod
                     }
                 }
 
-                if (!isInGame && settings.ShowPlayerCounts)
+                if (!isInGame)
                 {
                     //Update player counts
                     playerCountManager.UpdatePlayerCounts(client.State.CoursePlayerCounts, client.State.StagePlayerCounts, courseDataManager, client.CurrentTick);
@@ -313,6 +315,9 @@ namespace BMOnline.Mod
                     netPlayer.Rotation = netPlayer.PhysicalTransform.rotation;
                     netPlayer.GravityTilt.update();
                     netPlayer.PhysicalTransform.localPosition = netPlayer.BehaviourTransform.localPosition;
+
+                    if (netPlayer.NameTagEnabled != settings.ShowNameTags)
+                        netPlayer.NameTagEnabled = settings.ShowNameTags;
 
                     if (settings.ShowNameTags)
                     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using BMOnline.Common;
+using UnityEngine;
 
 namespace BMOnline.Mod
 {
@@ -41,22 +42,73 @@ namespace BMOnline.Mod
             }
             Log.Config($"Server IP: {ServerIpAddress}    Server Port: {ServerPort}    Password Provided: {(ServerPassword != null ? "Yes" : "No")}");
             //Get settings
-            if (settings.TryGetValue("ShowPlayerCounts", out object objShowPlayerCounts) && objShowPlayerCounts is bool showPlayerCounts)
-            {
-                ShowPlayerCounts = showPlayerCounts;
-            }
-            Log.Config(ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
             if (settings.TryGetValue("ShowNameTags", out object objShowNameTags) && objShowNameTags is bool showNameTags)
             {
-                ShowNameTags = showNameTags;
+                this.showNameTags = showNameTags;
             }
             Log.Config(ShowNameTags ? "Name Tags: Visible" : "Name Tags: Hidden");
+            if (settings.TryGetValue("ShowPlayerCounts", out object objShowPlayerCounts) && objShowPlayerCounts is bool showPlayerCounts)
+            {
+                this.showPlayerCounts = showPlayerCounts;
+            }
+            Log.Config(ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
         }
 
         public IPAddress ServerIpAddress { get; private set; } = null;
         public ushort ServerPort { get; private set; } = 10998;
         public string ServerPassword { get; private set; } = null;
-        public bool ShowPlayerCounts { get; private set; } = true;
-        public bool ShowNameTags { get; private set; } = true;
+
+        private bool showNameTags = true;
+        public bool ShowNameTags
+        {
+            get => showNameTags;
+            set
+            {
+                showNameTags = value;
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.NameTags));
+            }
+        }
+
+        private bool showPlayerCounts = true;
+        public bool ShowPlayerCounts
+        {
+            get => showPlayerCounts;
+            set
+            {
+                showPlayerCounts = value;
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.PlayerCounts));
+            }
+        }
+
+        public enum Setting
+        {
+            ServerIpAddress,
+            ServerPort,
+            ServerPassword,
+            NameTags,
+            PlayerCounts
+        }
+        public class OnSettingChangedEventArgs : EventArgs
+        {
+            public OnSettingChangedEventArgs(Setting settingChanged)
+            {
+                SettingChanged = settingChanged;
+            }
+
+            public Setting SettingChanged { get; }
+        }
+        public event EventHandler<OnSettingChangedEventArgs> OnSettingChanged;
+
+        public void CheckHotkeys()
+        {
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                ShowNameTags = !ShowNameTags;
+            }
+            if (Input.GetKeyDown(KeyCode.F3))
+            {
+                ShowPlayerCounts = !ShowPlayerCounts;
+            }
+        }
     }
 }

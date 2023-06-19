@@ -56,6 +56,7 @@ namespace BMOnline.Mod
         interface IPlayerCountSet<out T> where T : class
         {
             void RecreateItemsIfNeeded();
+            void DestroyAllItems();
             void UpdateText(Dictionary<byte, ushort> courseCounts, Dictionary<ushort, ushort> stageCounts);
         }
 
@@ -107,6 +108,15 @@ namespace BMOnline.Mod
                 }
             }
 
+            public void DestroyAllItems()
+            {
+                foreach (PlayerCountItem<T> item in items)
+                {
+                    item.Destroy();
+                }
+                items = Array.Empty<PlayerCountItem<T>>();
+            }
+
             public void UpdateText(Dictionary<byte, ushort> courseCounts, Dictionary<ushort, ushort> stageCounts)
             {
                 if (itemContainer == null || !itemContainer.activeInHierarchy) return;
@@ -117,12 +127,16 @@ namespace BMOnline.Mod
             }
         }
 
+        private ModSettings settings;
         private MgCourseDataManager courseDataManager;
         private readonly IPlayerCountSet<object>[] counts;
         private uint lastTick = uint.MaxValue;
 
-        public PlayerCountManager()
+        public PlayerCountManager(ModSettings settings)
         {
+            this.settings = settings;
+            settings.OnSettingChanged += HandleOnSettingChanged;
+
             Transform uiList = AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform;
             counts = new IPlayerCountSet<object>[]
             {
@@ -293,6 +307,22 @@ namespace BMOnline.Mod
             };
         }
 
+        ~PlayerCountManager()
+        {
+            settings.OnSettingChanged -= HandleOnSettingChanged;
+        }
+
+        private void HandleOnSettingChanged(object s, ModSettings.OnSettingChangedEventArgs e)
+        {
+            if (e.SettingChanged == ModSettings.Setting.PlayerCounts)
+            {
+                if (settings.ShowPlayerCounts)
+                    RecreatePlayerCountsIfNeeded();
+                else
+                    DestroyAllItems();
+            }
+        }
+
         private IEnumerable<int> GetStagesInCourse(MainGameDef.eCourse course)
         {
             HashSet<int> stages = new HashSet<int>();
@@ -371,15 +401,24 @@ namespace BMOnline.Mod
 
         public void RecreatePlayerCountsIfNeeded()
         {
+            if (!settings.ShowPlayerCounts) return;
             foreach (IPlayerCountSet<object> set in counts)
             {
                 set.RecreateItemsIfNeeded();
             }
         }
 
+        public void DestroyAllItems()
+        {
+            foreach (IPlayerCountSet<object> set in counts)
+            {
+                set.DestroyAllItems();
+            }
+        }
+
         public void UpdatePlayerCounts(Dictionary<byte, ushort> courseCounts, Dictionary<ushort, ushort> stageCounts, MgCourseDataManager courseDataManager, uint currentTick)
         {
-            if (currentTick == lastTick) return;
+            if (!settings.ShowPlayerCounts || currentTick == lastTick) return;
             lastTick = currentTick;
 
             this.courseDataManager = courseDataManager;

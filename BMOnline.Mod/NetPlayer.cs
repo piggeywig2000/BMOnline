@@ -32,7 +32,13 @@ namespace BMOnline.Mod
         public PlayerMotion.State MotionState { get; set; } = PlayerMotion.State.IDLE;
         public bool IsOnGround { get; set; } = false;
 
-        public void Instantiate(Transform root, MainGameStage mainGameStage, bool showNametag)
+        public bool NameTagEnabled
+        {
+            get => NameTag?.activeSelf ?? false;
+            set => NameTag?.SetActive(value);
+        }
+
+        public void Instantiate(Transform root, MainGameStage mainGameStage)
         {
             GameObject playerPrefab = AssetBundleCache.Instance.getAsset<GameObject>("Player/Common/Ghost.prefab");
             GameObject = GameObject.Instantiate(playerPrefab, new Vector3(0, 0, 0), Quaternion.identity, root);
@@ -62,11 +68,8 @@ namespace BMOnline.Mod
             Motion.OnStart(PlayerObject.gameObject);
 
             //Create nametag
-            if (showNametag)
-            {
-                NameTag = GameObject.Instantiate(AssetBundleItems.NameTagPrefab, new Vector3(0, 0, 0), Quaternion.identity, GameObject.transform);
-                NameTag.GetComponentInChildren<Text>().text = Name;
-            }
+            NameTag = GameObject.Instantiate(AssetBundleItems.NameTagPrefab, new Vector3(0, 0, 0), Quaternion.identity, GameObject.transform);
+            NameTag.GetComponentInChildren<Text>().text = Name;
 
             Reset(mainGameStage);
         }
