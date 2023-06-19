@@ -257,7 +257,7 @@ namespace BMOnline.Mod
 
                         if (!CharaCustomizeManager.isBusy && !MgCharaManager.isBusy)
                         {
-                            netPlayer.Instantiate(objRoot, mainGameStage, settings.ShowUsernames);
+                            netPlayer.Instantiate(objRoot, mainGameStage, settings.ShowNameTags);
                             loadedPlayers.Add(playerId);
                         }
                     }
@@ -314,7 +314,7 @@ namespace BMOnline.Mod
                     netPlayer.GravityTilt.update();
                     netPlayer.PhysicalTransform.localPosition = netPlayer.BehaviourTransform.localPosition;
 
-                    if (settings.ShowUsernames)
+                    if (settings.ShowNameTags)
                     {
                         netPlayer.NameTag.transform.localPosition = netPlayer.BehaviourTransform.localPosition + (MainGame.isViewStage ? new Vector3(0, 3f, 0) : new Vector3(0, 1f, 0));
                         Vector3 lookAtPos = MainGame.isViewStage ? MainGame.Instance.m_viewStageCamera.transform.position : mainGameStage.m_CameraController.GetMainCamera().transform.position;

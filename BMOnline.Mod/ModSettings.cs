@@ -46,17 +46,17 @@ namespace BMOnline.Mod
                 ShowPlayerCounts = showPlayerCounts;
             }
             Log.Config(ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
-            if (settings.TryGetValue("ShowUsernames", out object objShowUsernames) && objShowUsernames is bool showUsernames)
+            if (settings.TryGetValue("ShowNameTags", out object objShowNameTags) && objShowNameTags is bool showNameTags)
             {
-                ShowUsernames = showUsernames;
+                ShowNameTags = showNameTags;
             }
-            Log.Config(ShowUsernames ? "Usernames: Visible" : "Usernames: Hidden");
+            Log.Config(ShowNameTags ? "Name Tags: Visible" : "Name Tags: Hidden");
         }
 
         public IPAddress ServerIpAddress { get; private set; } = null;
         public ushort ServerPort { get; private set; } = 10998;
         public string ServerPassword { get; private set; } = null;
         public bool ShowPlayerCounts { get; private set; } = true;
-        public bool ShowUsernames { get; private set; } = true;
+        public bool ShowNameTags { get; private set; } = true;
     }
 }
