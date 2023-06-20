@@ -307,7 +307,7 @@ namespace BMOnline.Mod
 
                 client.StateSemaphore.Release();
 
-                //Update player position and nametag
+                //Update player position and nametag and visibility
                 foreach (ushort playerId in idToPlayer.Keys)
                 {
                     NetPlayer netPlayer = idToPlayer[playerId];
@@ -329,6 +329,45 @@ namespace BMOnline.Mod
                         netPlayer.NameTag.transform.LookAt(lookAtPos);
                         netPlayer.NameTag.transform.localScale = MainGame.isViewStage ? new Vector3(4, 4, 4) : Vector3.one;
                     }
+
+                    bool isVisible = true;
+                    switch (settings.PlayerVisibility)
+                    {
+                        case ModSettings.PlayerVisibilityOption.ShowAll:
+                            isVisible = true;
+                            break;
+                        case ModSettings.PlayerVisibilityOption.HideNear:
+                            if (!MainGame.isViewStage && !MainGame.isViewPlayer)
+                            {
+                                //Set visibility based on distance 
+                                Vector3 localPlayerPos = mainGameStage.GetPlayer().transform.position;
+                                Vector3 cameraPos = mainGameStage.m_CameraController.GetMainCamera().transform.position;
+                                Vector3 remotePlayerPos = netPlayer.BehaviourTransform.position;
+                                float lineLengthSquared = Mathf.Pow(localPlayerPos.x - cameraPos.x, 2) + Mathf.Pow(localPlayerPos.y - cameraPos.y, 2) + Mathf.Pow(localPlayerPos.z - cameraPos.z, 2);
+                                float remoteDistance;
+                                if (lineLengthSquared == 0)
+                                    remoteDistance = Mathf.Pow(remotePlayerPos.x - localPlayerPos.x, 2) + Mathf.Pow(remotePlayerPos.y - localPlayerPos.y, 2) + Mathf.Pow(remotePlayerPos.z - localPlayerPos.z, 2);
+                                else
+                                {
+                                    float t = ((remotePlayerPos.x - localPlayerPos.x) * (cameraPos.x - localPlayerPos.x) + (remotePlayerPos.y - localPlayerPos.y) * (cameraPos.y - localPlayerPos.y) + (remotePlayerPos.z - localPlayerPos.z) * (cameraPos.z - localPlayerPos.z)) / lineLengthSquared;
+                                    t = Math.Max(Math.Min(t, 1), 0);
+                                    remoteDistance =
+                                        Mathf.Pow(remotePlayerPos.x - (localPlayerPos.x + (t * (cameraPos.x - localPlayerPos.x))), 2) +
+                                        Mathf.Pow(remotePlayerPos.y - (localPlayerPos.y + (t * (cameraPos.y - localPlayerPos.y))), 2) +
+                                        Mathf.Pow(remotePlayerPos.z - (localPlayerPos.z + (t * (cameraPos.z - localPlayerPos.z))), 2);
+                                }
+                                float distanceCutoff = netPlayer.GameObject.activeSelf ? 4 : 5;
+                                isVisible = remoteDistance >= distanceCutoff;
+                            }
+                            else
+                                isVisible = true;
+                            break;
+                        case ModSettings.PlayerVisibilityOption.HideAll:
+                            isVisible = false;
+                            break;
+                    }
+                    if (netPlayer.GameObject.activeSelf != isVisible)
+                        netPlayer.GameObject.SetActive(isVisible);
                 }
 
                 //Reset other players if stage was reset

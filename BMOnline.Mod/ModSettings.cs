@@ -105,6 +105,26 @@ namespace BMOnline.Mod
             }
         }
 
+        public enum PlayerVisibilityOption
+        {
+            ShowAll,
+            HideNear,
+            HideAll
+        }
+
+        private PlayerVisibilityOption playerVisibility = PlayerVisibilityOption.ShowAll;
+        public PlayerVisibilityOption PlayerVisibility
+        {
+            get => playerVisibility;
+            set
+            {
+                if (playerVisibility == value) return;
+                playerVisibility = value;
+                notificationsManager.ShowNotification(PlayerVisibility == PlayerVisibilityOption.ShowAll ? "Players: Visible" : (PlayerVisibility == PlayerVisibilityOption.HideNear ? "Players: Nearby Hidden" : "Players: Hidden"));
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.PlayerVisibility));
+            }
+        }
+
         public enum Setting
         {
             ServerIpAddress,
@@ -112,7 +132,8 @@ namespace BMOnline.Mod
             ServerPassword,
             ShowNameTags,
             ShowPlayerCounts,
-            EnableChat
+            EnableChat,
+            PlayerVisibility
         }
         public class OnSettingChangedEventArgs : EventArgs
         {
@@ -134,7 +155,8 @@ T: Open the chat
 F1: Show keybinds
 F2: Toggle name tag visibility
 F3: Toggle player counts visibility
-F4: Toggle chat visibility", 10);
+F4: Toggle chat visibility
+F5: Toggle player visibility", 10);
             }
             if (Input.GetKeyDown(KeyCode.F2))
             {
@@ -147,6 +169,10 @@ F4: Toggle chat visibility", 10);
             if (Input.GetKeyDown(KeyCode.F4))
             {
                 EnableChat = !EnableChat;
+            }
+            if (Input.GetKeyDown(KeyCode.F5))
+            {
+                PlayerVisibility = (PlayerVisibilityOption)(((int)PlayerVisibility + 1) % 3);
             }
         }
     }
