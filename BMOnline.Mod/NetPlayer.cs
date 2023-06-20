@@ -52,6 +52,9 @@ namespace BMOnline.Mod
             CharaCustomizeAssignBallShape ballShape = BehaviourTransform.GetComponent<CharaCustomizeAssignBallShape>();
             ballShape.InstantiateBallShape(Customisations);
 
+            //Disable MonkeySound to stop playing voice lines
+            PlayerObject.monkeySound.enabled = false;
+
             GameObject.Destroy(PhysicalTransform.GetComponent<ReplayTracker>());
 
             GravityTilt = BehaviourTransform.GetComponent<GravityTilt>();
