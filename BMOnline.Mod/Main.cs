@@ -22,7 +22,6 @@ namespace BMOnline.Mod
         private static bool hasFatalErrored = false;
         private static bool hasShownWelcomeChat = false;
 
-        private static Dictionary<string, object> settingsDict;
         private static ModSettings settings;
 
         private static NotificationsManager notificationsManager;
@@ -50,7 +49,7 @@ namespace BMOnline.Mod
         public static void OnModLoad(Dictionary<string, object> settingsDict)
         {
             Log.Info("Loading online multiplayer mod");
-            Main.settingsDict = settingsDict;
+            settings = new ModSettings(settingsDict);
         }
 
         public static void OnModLateUpdate()
@@ -88,8 +87,7 @@ namespace BMOnline.Mod
                 PlayerMotionPatch.CreateDetour();
                 AppInputPatch.CreateDetour();
 
-                notificationsManager = new NotificationsManager();
-                settings = new ModSettings(settingsDict, notificationsManager);
+                notificationsManager = new NotificationsManager(settings);
                 connectStateManager = new ConnectStateManager();
                 playerCountManager = new PlayerCountManager(settings);
                 chatManager = new ChatManager(settings);

@@ -1,6 +1,7 @@
 ﻿using Flash2;
 using UnityEngine;
 using UnityEngine.UI;
+using static BMOnline.Mod.ModSettings;
 
 namespace BMOnline.Mod
 {
@@ -16,11 +17,33 @@ namespace BMOnline.Mod
         private float timeSinceAnimStart = 0;
         private float animLength = 0;
 
-        public NotificationsManager()
+        public NotificationsManager(ModSettings settings)
         {
             root = Object.Instantiate(AssetBundleItems.NotificationPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
             containerTransform = root.transform.Find("Background").GetComponent<RectTransform>();
             textObject = containerTransform.GetComponentInChildren<Text>();
+
+            settings.OnSettingChanged += (s, e) =>
+            {
+                switch (e.SettingChanged)
+                {
+                    case Setting.ShowNameTags:
+                        ShowNotification(settings.ShowNameTags ? "Name Tags: Visible" : "Name Tags: Hidden");
+                        return;
+                    case Setting.NameTagSize:
+                        ShowNotification($"Name Tag Size: {settings.NameTagSize}");
+                        return;
+                    case Setting.ShowPlayerCounts:
+                        ShowNotification(settings.ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
+                        return;
+                    case Setting.EnableChat:
+                        ShowNotification(settings.EnableChat ? "Chat: Enabled" : "Chat: Disabled");
+                        return;
+                    case Setting.PlayerVisibility:
+                        ShowNotification(settings.PlayerVisibility == PlayerVisibilityOption.ShowAll ? "Players: Visible" : (settings.PlayerVisibility == PlayerVisibilityOption.HideNear ? "Players: Nearby Hidden" : "Players: Hidden"));
+                        return;
+                }
+            };
         }
 
         /// <summary>
@@ -43,6 +66,17 @@ namespace BMOnline.Mod
                         Mathf.Lerp(0, textObject.preferredWidth + 20, timeSinceFlyOutStart / FLY_TIME),
                     containerTransform.localPosition.y,
                     containerTransform.localPosition.z);
+            }
+
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                ShowNotification(@"Keybinds:
+T: Open the chat
+F1: Show keybinds
+F2: Toggle name tag visibility
+F3: Toggle player counts visibility
+F4: Toggle chat visibility
+F5: Toggle player visibility", 10);
             }
         }
 
