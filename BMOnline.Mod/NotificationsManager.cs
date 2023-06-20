@@ -39,8 +39,8 @@ namespace BMOnline.Mod
                 float timeSinceFlyOutStart = timeSinceAnimStart - (animLength - FLY_TIME);
                 containerTransform.localPosition = new Vector3(
                     timeSinceFlyOutStart < 0 ?
-                        Mathf.Lerp(containerTransform.sizeDelta.x, 0, timeSinceAnimStart / FLY_TIME) :
-                        Mathf.Lerp(0, containerTransform.sizeDelta.x, timeSinceFlyOutStart / FLY_TIME),
+                        Mathf.Lerp(textObject.preferredWidth + 20, 0, timeSinceAnimStart / FLY_TIME) :
+                        Mathf.Lerp(0, textObject.preferredWidth + 20, timeSinceFlyOutStart / FLY_TIME),
                     containerTransform.localPosition.y,
                     containerTransform.localPosition.z);
             }
