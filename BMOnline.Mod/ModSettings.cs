@@ -42,9 +42,9 @@ namespace BMOnline.Mod
             {
                 ServerPort = port;
             }
-            if (settings.TryGetValue("ServerPassword", out object objPassword) && objPassword is string pasword && !string.IsNullOrWhiteSpace(pasword))
+            if (settings.TryGetValue("ServerPassword", out object objPassword) && objPassword is string password && !string.IsNullOrWhiteSpace(password))
             {
-                ServerPassword = pasword;
+                ServerPassword = password;
             }
             Log.Config($"Server IP: {ServerIpAddress}    Server Port: {ServerPort}    Password Provided: {(ServerPassword != null ? "Yes" : "No")}");
 
@@ -72,6 +72,29 @@ namespace BMOnline.Mod
                 this.enableChat = enableChat;
             }
             Log.Config(EnableChat ? "Chat: Enabled" : "Chat: Disabled");
+
+            if (settings.TryGetValue("PlayerVisibility", out object objPlayerVisibility) && objPlayerVisibility is string playerVisibility && !string.IsNullOrWhiteSpace(playerVisibility))
+            {
+                switch (playerVisibility.ToLower())
+                {
+                    case "showall":
+                        this.playerVisibility = PlayerVisibilityOption.ShowAll;
+                        break;
+                    case "hidenear":
+                        this.playerVisibility = PlayerVisibilityOption.HideNear;
+                        break;
+                    case "hideall":
+                        this.playerVisibility = PlayerVisibilityOption.HideAll;
+                        break;
+                }
+            }
+            Log.Config($"Player Visibility: {PlayerVisibility:g}");
+
+            if (settings.TryGetValue("PersonalSpace", out object objPersonalSpace) && objPersonalSpace is float personalSpace)
+            {
+                this.personalSpace = Math.Max(Mathf.Round(personalSpace * 10) / 10, 0.1f);
+            }
+            Log.Config($"Personal Space: {PersonalSpace:0.#}");
         }
 
         public IPAddress ServerIpAddress { get; private set; } = null;
