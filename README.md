@@ -81,11 +81,12 @@ For someone to be able to connect to the server from outside of your local netwo
 ### Server configuration
 Server settings are provided in the form of command line arguments when you start the server. None of these options are required to be provided.
 ```
---port <port>               The port to run the server on. Should be a number from 1 to 65535. [default: 10998]
---password <password>       The server password. Omit this option to allow clients to connect to the server
-                            without a password.
---max-chat-length <length>  The maximum number of characters allowed in a single chat message. Set this to 0 to
-                            disable chat. [default: 280]
+--port <port>               The port to run the server on. Should be a number from 1 to 65535. [default:
+                            10998]
+--password <password>       The server password. Omit this option to allow clients to connect to the
+                            server without a password.
+--max-chat-length <length>  The maximum number of characters allowed in a single chat message. Set this
+                            to 0 to disable chat. [default: 280]
 ```
 For example, `BMOnline.Server.exe --port 5678 --password "monkey"` would run the server on port 5678 with the password monkey.
 
