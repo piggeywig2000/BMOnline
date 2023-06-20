@@ -324,7 +324,7 @@ namespace BMOnline.Mod
                     if (settings.ShowNameTags)
                     {
                         netPlayer.NameTag.transform.localPosition = netPlayer.BehaviourTransform.localPosition + (MainGame.isViewStage ? new Vector3(0, 3f, 0) : new Vector3(0, 1f, 0));
-                        Vector3 lookAtPos = MainGame.isViewStage ? MainGame.Instance.m_viewStageCamera.transform.position : mainGameStage.m_CameraController.GetMainCamera().transform.position;
+                        Vector3 lookAtPos = MainGame.isViewStage ? MainGame.Instance.m_viewStageCamera.transform.position : (MainGame.isViewPlayer ? MainGame.Instance.m_photoModeCamera.transform.position : mainGameStage.m_CameraController.GetMainCamera().transform.position);
                         lookAtPos = new Vector3(lookAtPos.x, netPlayer.NameTag.transform.position.y, lookAtPos.z);
                         netPlayer.NameTag.transform.LookAt(lookAtPos);
                         netPlayer.NameTag.transform.localScale = MainGame.isViewStage ? new Vector3(4, 4, 4) : Vector3.one;
