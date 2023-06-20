@@ -29,7 +29,13 @@ This mod has some extra keyboard controls. Currently they can't be changed.
 - `T`: Open the chat to type and view older messages
   - `Enter`: Send chat message and close the chat
   - `Esc`: Close the chat without sending
-- `F2`: Toggle chat visibility. Use this if you don't want to see the chat
+- `F1`: Show the keyboard controls
+- `F2`: Toggle the Show Name Tags setting
+- `F2` and `+` or `-`: Change the Name Tags Size setting
+- `F3`: Toggle the Show Player Counts setting
+- `F4`: Toggle the Enable Chat setting
+- `F5`: Change the Player Visibility setting
+- `F5` and `+` or `-`: Change the Personal Space setting
 
 ## Settings
 The mod settings can be changed in the Banana Mod Manager by clicking on the mod. If you'd like to just play the game online you don't need to worry about changing the mod settings, it should just work.
@@ -39,8 +45,15 @@ The mod settings can be changed in the Banana Mod Manager by clicking on the mod
   - Server Port: The port of the custom server. Should be a number from 1 to 65535. Leave it empty to use the default port (10998).
   - Server Password: The password for the custom server. Leave it empty if the server doesn't have a password.
 - In-Game Settings: In-game settings related to the mod
+  - Show Name Tags: Whether to show the player names above the other players. By default this is enabled.
+  - Name Tag Size: The size of the name tags. By default this is 48.
   - Show Player Counts: Whether to show the number of players playing each stage on the stage, course, and mode selection screens. By default this is enabled.
-  - Show Usernames: Whether to show the player names above the other players. By default this is enabled.
+  - Enable Chat: Whether to show the chat. If disabled, you will not be able to send or receive chat messages. By default this is enabled.
+  - Player Visibility: The visibility of the other players. There are 3 valid values:
+    - ShowAll: Players are always visible. This is the default value.
+    - HideNear: Players that are close to you or to the camera are hidden.
+    - HideAll: Players are always hidden.
+  - Personal Space: When using HideNear visibility, this defines how far away a player needs to be before they are visible. Measured as the distance from the line between the camera and your player's ball.
 
 ## Running the server
 If you want to play online on a private server so that only people that you know can join, you'll need to host your own server. The server can run on Windows, MacOS, and Linux.
@@ -68,8 +81,11 @@ For someone to be able to connect to the server from outside of your local netwo
 ### Server configuration
 Server settings are provided in the form of command line arguments when you start the server. None of these options are required to be provided.
 ```
---port <port>          The port to run the server on. Should be a number from 1 to 65535. [default: 10998]
---password <password>  The server password. Omit this option to allow clients to connect to the server without a password.
+--port <port>               The port to run the server on. Should be a number from 1 to 65535. [default: 10998]
+--password <password>       The server password. Omit this option to allow clients to connect to the server
+                            without a password.
+--max-chat-length <length>  The maximum number of characters allowed in a single chat message. Set this to 0 to
+                            disable chat. [default: 280]
 ```
 For example, `BMOnline.Server.exe --port 5678 --password "monkey"` would run the server on port 5678 with the password monkey.
 
