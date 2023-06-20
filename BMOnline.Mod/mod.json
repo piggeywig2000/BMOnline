@@ -1,9 +1,10 @@
 {
-    "Title": "Banana Mania Online",
-    "Id": "piggeywig2000.online",
-    "DLLFile": "BMOnline.Mod.dll",
-    "Description": "Online multiplayer mod for SMBBM, MMO style.",
-    "Version": "1.1.1",
-    "Date": "20/06/2023",
-    "Author": "piggeywig2000"
+  "Title": "Banana Mania Online",
+  "Id": "piggeywig2000.online",
+  "DLLFile": "BMOnline.Mod.dll",
+  "Priority": "0",
+  "Description": "Online multiplayer mod for SMBBM, MMO style.",
+  "Version": "1.1.1",
+  "Date": "20/06/2023",
+  "Author": "piggeywig2000"
 }
