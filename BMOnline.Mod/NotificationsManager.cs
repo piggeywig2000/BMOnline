@@ -18,7 +18,7 @@ namespace BMOnline.Mod
 
         public NotificationsManager()
         {
-            root = UnityEngine.Object.Instantiate(AssetBundleItems.NotificationPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
+            root = Object.Instantiate(AssetBundleItems.NotificationPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
             containerTransform = root.transform.Find("Background").GetComponent<RectTransform>();
             textObject = containerTransform.GetComponentInChildren<Text>();
         }
