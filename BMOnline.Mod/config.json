@@ -41,7 +41,7 @@
   },
   "PersonalSpace": {
     "Value": 2,
-    "Description": "Hotkey: F5 and +/-. \nWhen using HideNear player visibility, how far away a player needs to be before they are visible. Measured as the distance from the line between the camera and your players ball. \nDefault distance is 2.",
+    "Description": "Hotkey: F5 and +/-. \nWhen using HideNear player visibility, how far away a player needs to be before they are visible. Measured as the distance from the line between the camera and your player''s ball. \nDefault distance is 2.",
     "Category": "In-Game Settings"
   }
 }
