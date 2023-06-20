@@ -71,6 +71,19 @@ namespace BMOnline.Mod
             }
         }
 
+        private static GameObject notificationPrefab;
+        public static GameObject NotificationPrefab
+        {
+            get
+            {
+                if (notificationPrefab == null)
+                {
+                    notificationPrefab = BmOnlineAb.LoadAsset<GameObject>("Assets/Prefabs/Notification.prefab");
+                }
+                return notificationPrefab;
+            }
+        }
+
         private static GameObject chatPrefab;
         public static GameObject ChatPrefab
         {

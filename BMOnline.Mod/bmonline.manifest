@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 4267593458
+CRC: 3625796727
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: e3617585910bfebd134f09571651f668
+    Hash: 317e82c0f5777def998553d860c3e297
   TypeTreeHash:
     serializedVersion: 2
     Hash: eb99ddd077b5cbd8775a986765c239d2
@@ -52,6 +52,7 @@ ClassTypes:
 SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/Prefabs/NameTag.prefab
+- Assets/Prefabs/Notification.prefab
 - Assets/Prefabs/Chat.prefab
 - Assets/Prefabs/ConnectStatus.prefab
 - Assets/Prefabs/ChatMessage.prefab

@@ -25,6 +25,7 @@ namespace BMOnline.Mod
         private static Dictionary<string, object> settingsDict;
         private static ModSettings settings;
 
+        private static NotificationsManager notificationsManager;
         private static ConnectStateManager connectStateManager;
         private static PlayerCountManager playerCountManager;
         private static ChatManager chatManager;
@@ -55,6 +56,7 @@ namespace BMOnline.Mod
         public static void OnModLateUpdate()
         {
             settings?.CheckHotkeys();
+            notificationsManager?.Update();
 
             //Check for fatal networking errors
             if (hasFatalErrored)
@@ -86,8 +88,8 @@ namespace BMOnline.Mod
                 PlayerMotionPatch.CreateDetour();
                 AppInputPatch.CreateDetour();
 
-                settings = new ModSettings(settingsDict);
-
+                notificationsManager = new NotificationsManager();
+                settings = new ModSettings(settingsDict, notificationsManager);
                 connectStateManager = new ConnectStateManager();
                 playerCountManager = new PlayerCountManager(settings);
                 chatManager = new ChatManager(settings);
@@ -180,7 +182,7 @@ namespace BMOnline.Mod
             //Update chat
             if (client.IsConnected && !hasShownWelcomeChat)
             {
-                chatManager.AddChatMessage("Welcome to Banana Mania Online!\nPress 'T' to type in the chat.\nPress F2 to show or hide the chat.");
+                chatManager.AddChatMessage("Welcome to Banana Mania Online!\nPress 'T' to type in the chat.\nPress F1 to see keybinds.");
                 hasShownWelcomeChat = true;
             }
             string outgoingMessage = chatManager.UpdateAndGetSubmittedChat();

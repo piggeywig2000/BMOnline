@@ -9,9 +9,12 @@ namespace BMOnline.Mod
 {
     internal class ModSettings
     {
+        private NotificationsManager notificationsManager;
 
-        public ModSettings(Dictionary<string, object> settings)
+        public ModSettings(Dictionary<string, object> settings, NotificationsManager notificationsManager)
         {
+            this.notificationsManager = notificationsManager;
+
             Log.Info("Loading configuration");
             //Get server address
             try
@@ -69,7 +72,9 @@ namespace BMOnline.Mod
             get => showNameTags;
             set
             {
+                if (showNameTags == value) return;
                 showNameTags = value;
+                notificationsManager.ShowNotification(ShowNameTags ? "Name Tags: Visible" : "Name Tags: Hidden");
                 OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.ShowNameTags));
             }
         }
@@ -80,7 +85,9 @@ namespace BMOnline.Mod
             get => showPlayerCounts;
             set
             {
+                if (showPlayerCounts == value) return;
                 showPlayerCounts = value;
+                notificationsManager.ShowNotification(ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
                 OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.ShowPlayerCounts));
             }
         }
@@ -91,7 +98,9 @@ namespace BMOnline.Mod
             get => enableChat;
             set
             {
+                if (enableChat == value) return;
                 enableChat = value;
+                notificationsManager.ShowNotification(EnableChat ? "Chat: Enabled" : "Chat: Disabled");
                 OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.EnableChat));
             }
         }
@@ -118,6 +127,15 @@ namespace BMOnline.Mod
 
         public void CheckHotkeys()
         {
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                notificationsManager.ShowNotification(@"Keybinds:
+T: Open the chat
+F1: Show keybinds
+F2: Toggle name tag visibility
+F3: Toggle player counts visibility
+F4: Toggle chat visibility", 10);
+            }
             if (Input.GetKeyDown(KeyCode.F2))
             {
                 ShowNameTags = !ShowNameTags;
