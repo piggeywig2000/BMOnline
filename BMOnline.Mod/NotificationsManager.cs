@@ -77,9 +77,11 @@ namespace BMOnline.Mod
 T: Open the chat
 F1: Show keybinds
 F2: Toggle name tag visibility
+F2 and +/-: Adjust name tag size
 F3: Toggle player counts visibility
 F4: Toggle chat visibility
-F5: Toggle player visibility", 10);
+F5: Toggle player visibility
+F5 and +/-: Adjust personal space", 10);
             }
         }
 
