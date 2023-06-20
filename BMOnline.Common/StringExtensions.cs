@@ -7,11 +7,11 @@ namespace BMOnline.Common
         private static readonly Regex richTextRegex = new Regex(@"<\/?(b|i|size|color|material|quad)(=.*?)?>", RegexOptions.IgnoreCase);
 
         public static string RemoveWhitespace(this string str)
-            => str.Replace('\n', ' ')
+            => str.Replace("\r\n", " ")
+                  .Replace('\n', ' ')
                   .Replace('\r', ' ')
                   .Replace('\t', ' ')
-                  .Replace('\f', ' ')
-                  .Trim();
+                  .Replace('\f', ' ');
 
         public static string RemoveDoubleSpaces(this string str)
         {

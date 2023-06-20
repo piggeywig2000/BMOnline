@@ -64,7 +64,7 @@ namespace BMOnline.Server
             }
 
             //Clean name
-            message.Name = message.Name.RemoveWhitespace().RemoveRichText().RemoveDoubleSpaces();
+            message.Name = message.Name.RemoveWhitespace().Trim().RemoveRichText().RemoveDoubleSpaces();
 
             //Name cannot be longer than 32 characters and must be longer than 0 characters
             if (message.Name.Length > 32 || message.Name.Length == 0)
@@ -122,7 +122,7 @@ namespace BMOnline.Server
             if (!userManager.TryGetUserFromSecret(message.Secret, out User? user))
                 return; //If user not found, drop packet
             user.Renew(Time);
-            string content = message.Content.RemoveWhitespace().RemoveRichText().RemoveDoubleSpaces();
+            string content = message.Content.RemoveWhitespace().Trim().RemoveRichText().RemoveDoubleSpaces();
             if (content.Length > maxChatLength)
                 content = content.Substring(0, maxChatLength);
             user.IncomingChats.ReceiveChatFromRemote(message.Index, content);

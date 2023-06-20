@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BMOnline.Common;
 using BMOnline.Mod.Patches;
 using Flash2;
 using UnhollowerRuntimeLib;
@@ -270,6 +271,22 @@ namespace BMOnline.Mod.Chat
             {
                 cursor.gameObject.SetActive(!cursor.gameObject.activeSelf);
                 cursorBlinkTimer = Mathf.Min(cursorBlinkTimer - 0.6f, 0.6f);
+            }
+
+            //Handle clipboard pasting
+            if (Input.GetKeyDown(KeyCode.V) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !string.IsNullOrEmpty(GUIUtility.systemCopyBuffer))
+            {
+                string clipboard = GUIUtility.systemCopyBuffer;
+                clipboard = clipboard.RemoveWhitespace();
+                if (inputText.text.Length + clipboard.Length > MaxChatLength)
+                    clipboard = clipboard.Substring(0, Math.Max(0, MaxChatLength - inputText.text.Length));
+                if (clipboard.Length > 0)
+                {
+                    inputText.text = inputText.text.Substring(0, cursorPosition) + clipboard + inputText.text.Substring(cursorPosition, inputText.text.Length - cursorPosition);
+                    cursorPosition += clipboard.Length;
+                    RepositionCursor();
+                    RepositionMessageList();
+                }
             }
 
             //Add typed characters
