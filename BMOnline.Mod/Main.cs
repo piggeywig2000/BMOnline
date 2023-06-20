@@ -358,8 +358,7 @@ namespace BMOnline.Mod
                                         Mathf.Pow(remotePlayerPos.y - (localPlayerPos.y + (t * (cameraPos.y - localPlayerPos.y))), 2) +
                                         Mathf.Pow(remotePlayerPos.z - (localPlayerPos.z + (t * (cameraPos.z - localPlayerPos.z))), 2);
                                 }
-                                float distanceCutoff = netPlayer.GameObject.activeSelf ? 4 : 5;
-                                isVisible = remoteDistance >= distanceCutoff;
+                                isVisible = remoteDistance >= Math.Pow(settings.PersonalSpace, 2);
                             }
                             else
                                 isVisible = true;

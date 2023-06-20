@@ -42,6 +42,9 @@ namespace BMOnline.Mod
                     case Setting.PlayerVisibility:
                         ShowNotification(settings.PlayerVisibility == PlayerVisibilityOption.ShowAll ? "Players: Visible" : (settings.PlayerVisibility == PlayerVisibilityOption.HideNear ? "Players: Nearby Hidden" : "Players: Hidden"));
                         return;
+                    case Setting.PersonalSpace:
+                        ShowNotification($"Personal Space: {settings.PersonalSpace:0.#}");
+                        return;
                 }
             };
         }

@@ -146,6 +146,19 @@ namespace BMOnline.Mod
             }
         }
 
+        private float personalSpace = 2f;
+        public float PersonalSpace
+        {
+            get => personalSpace;
+            set
+            {
+                value = Math.Max(Mathf.Round(value * 10) / 10, 0.1f);
+                if (personalSpace == value) return;
+                personalSpace = value;
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.PersonalSpace));
+            }
+        }
+
         public enum Setting
         {
             ServerIpAddress,
@@ -155,7 +168,8 @@ namespace BMOnline.Mod
             NameTagSize,
             ShowPlayerCounts,
             EnableChat,
-            PlayerVisibility
+            PlayerVisibility,
+            PersonalSpace
         }
         public class OnSettingChangedEventArgs : EventArgs
         {
@@ -195,6 +209,11 @@ namespace BMOnline.Mod
                 {
                     ShowNameTags = true;
                     NameTagSize += isPlus ? 1 : -1;
+                }
+                else if (Input.GetKey(KeyCode.F5))
+                {
+                    PlayerVisibility = PlayerVisibilityOption.HideNear;
+                    PersonalSpace += isPlus ? 0.1f : -0.1f;
                 }
             }
         }
