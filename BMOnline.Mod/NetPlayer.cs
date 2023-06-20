@@ -25,6 +25,7 @@ namespace BMOnline.Mod
         public GravityTilt GravityTilt { get; private set; }
         public PlayerMotion Motion { get; private set; }
         public GameObject NameTag { get; private set; }
+        public Text NameTagText { get; private set; }
         public Vector3 Position { get; set; } = Vector3.zero;
         public Vector3 AngularVelocity { get; set; } = Vector3.zero;
         public Quaternion Rotation { get; set; } = Quaternion.identity;
@@ -72,7 +73,8 @@ namespace BMOnline.Mod
 
             //Create nametag
             NameTag = GameObject.Instantiate(AssetBundleItems.NameTagPrefab, new Vector3(0, 0, 0), Quaternion.identity, GameObject.transform);
-            NameTag.GetComponentInChildren<Text>().text = Name;
+            NameTagText = NameTag.GetComponentInChildren<Text>();
+            NameTagText.text = Name;
 
             Reset(mainGameStage);
         }

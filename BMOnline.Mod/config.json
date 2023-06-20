@@ -19,6 +19,11 @@
     "Description": "Whether to show the username of the player above their ball.",
     "Category": "In-Game Settings"
   },
+  "NameTagSize": {
+    "Value": 48,
+    "Description": "The size of the name tags. Default size is 48.",
+    "Category": "In-Game Settings"
+  },
   "ShowPlayerCounts": {
     "Value": true,
     "Description": "Whether to show the number of players playing each stage on the stage selection screen.",

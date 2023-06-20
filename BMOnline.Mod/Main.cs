@@ -330,6 +330,8 @@ namespace BMOnline.Mod
                         lookAtPos = new Vector3(lookAtPos.x, netPlayer.NameTag.transform.position.y, lookAtPos.z);
                         netPlayer.NameTag.transform.LookAt(lookAtPos);
                         netPlayer.NameTag.transform.localScale = MainGame.isViewStage ? new Vector3(4, 4, 4) : Vector3.one;
+                        if (netPlayer.NameTagText.fontSize != settings.NameTagSize)
+                            netPlayer.NameTagText.fontSize = settings.NameTagSize;
                     }
 
                     bool isVisible = true;

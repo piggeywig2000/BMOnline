@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using BMOnline.Common;
+using BMOnline.Mod.Chat;
 using UnityEngine;
 
 namespace BMOnline.Mod
@@ -10,10 +11,15 @@ namespace BMOnline.Mod
     internal class ModSettings
     {
         private NotificationsManager notificationsManager;
+        private readonly SpamTracker minusSpam;
+        private readonly SpamTracker plusSpam;
+        private bool isAdjustingNumber = false;
 
         public ModSettings(Dictionary<string, object> settings, NotificationsManager notificationsManager)
         {
             this.notificationsManager = notificationsManager;
+            minusSpam = new SpamTracker(KeyCode.Minus);
+            plusSpam = new SpamTracker(KeyCode.Equals);
 
             Log.Info("Loading configuration");
             //Get server address
@@ -44,17 +50,26 @@ namespace BMOnline.Mod
                 ServerPassword = pasword;
             }
             Log.Config($"Server IP: {ServerIpAddress}    Server Port: {ServerPort}    Password Provided: {(ServerPassword != null ? "Yes" : "No")}");
+
             //Get settings
             if (settings.TryGetValue("ShowNameTags", out object objShowNameTags) && objShowNameTags is bool showNameTags)
             {
                 this.showNameTags = showNameTags;
             }
             Log.Config(ShowNameTags ? "Name Tags: Visible" : "Name Tags: Hidden");
+
+            if (settings.TryGetValue("NameTagSize", out object objNameTagSize) && objNameTagSize is float nameTagSize)
+            {
+                this.nameTagSize = Math.Max((int)nameTagSize, 1);
+            }
+            Log.Config($"Name Tag Size: {NameTagSize}");
+
             if (settings.TryGetValue("ShowPlayerCounts", out object objShowPlayerCounts) && objShowPlayerCounts is bool showPlayerCounts)
             {
                 this.showPlayerCounts = showPlayerCounts;
             }
             Log.Config(ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
+
             if (settings.TryGetValue("EnableChat", out object objEnableChat) && objEnableChat is bool enableChat)
             {
                 this.enableChat = enableChat;
@@ -76,6 +91,20 @@ namespace BMOnline.Mod
                 showNameTags = value;
                 notificationsManager.ShowNotification(ShowNameTags ? "Name Tags: Visible" : "Name Tags: Hidden");
                 OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.ShowNameTags));
+            }
+        }
+
+        private int nameTagSize = 48;
+        public int NameTagSize
+        {
+            get => nameTagSize;
+            set
+            {
+                value = Math.Max(value, 1);
+                if (nameTagSize == value) return;
+                nameTagSize = value;
+                notificationsManager.ShowNotification($"Name Tag Size: {NameTagSize}");
+                OnSettingChanged?.Invoke(this, new OnSettingChangedEventArgs(Setting.NameTagSize));
             }
         }
 
@@ -131,6 +160,7 @@ namespace BMOnline.Mod
             ServerPort,
             ServerPassword,
             ShowNameTags,
+            NameTagSize,
             ShowPlayerCounts,
             EnableChat,
             PlayerVisibility
@@ -173,6 +203,27 @@ F5: Toggle player visibility", 10);
             if (Input.GetKeyDown(KeyCode.F5))
             {
                 PlayerVisibility = (PlayerVisibilityOption)(((int)PlayerVisibility + 1) % 3);
+            }
+
+            //Reset isAdjustingNumber if no keys are pressed
+            if (!Input.GetKey(KeyCode.F1) && !Input.GetKey(KeyCode.F2) && !Input.GetKey(KeyCode.F3) && !Input.GetKey(KeyCode.F4) && !Input.GetKey(KeyCode.F5))
+            {
+                isAdjustingNumber = false;
+            }
+
+            bool isMinus = minusSpam.UpdateAndGetState();
+            bool isPlus = plusSpam.UpdateAndGetState();
+            if (isMinus || isPlus)
+            {
+                if (Input.GetKey(KeyCode.F2))
+                {
+                    if (!isAdjustingNumber)
+                    {
+                        ShowNameTags = true;
+                        isAdjustingNumber = true;
+                    }
+                    NameTagSize += isPlus ? 1 : -1;
+                }
             }
         }
     }
