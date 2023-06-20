@@ -297,6 +297,8 @@ namespace BMOnline.Mod
                 }
 
                 //Send/receive chats
+                if (chatManager.MaxChatLength != client.State.MaxChatLength)
+                    chatManager.MaxChatLength = client.State.MaxChatLength;
                 if (outgoingMessage != null && client.State.OutgoingChats != null)
                     client.State.OutgoingChats.SendChat(outgoingMessage);
                 if (client.State.IncomingChats != null && client.State.IncomingChats.HasReceivedChat)

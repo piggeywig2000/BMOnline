@@ -89,6 +89,7 @@ namespace BMOnline.Client
 
             await StateSemaphore.WaitAsync();
             State.OnlineCount = message.OnlineCount;
+            State.MaxChatLength = message.MaxChatLength;
             if (State.IncomingChats == null)
             {
                 State.OutgoingChats = new Common.Chat.OutgoingChatBuffer();

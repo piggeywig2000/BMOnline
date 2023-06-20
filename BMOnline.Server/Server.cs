@@ -9,17 +9,18 @@ namespace BMOnline.Server
     {
         private readonly UserManager userManager;
         private readonly string? password;
+        private readonly ushort maxChatLength;
         private readonly List<(IPEndPoint, uint, LoginRefuseReason)> loginRefusals;
         private readonly OutgoingChatBuffer outgoingChats;
 
-        public Server(IPEndPoint localEP, string? password) : base(localEP)
+        public Server(IPEndPoint localEP, string? password, ushort maxChatLength) : base(localEP)
         {
             userManager = new UserManager();
             this.password = password;
+            this.maxChatLength = maxChatLength;
             loginRefusals = new List<(IPEndPoint, uint, LoginRefuseReason)>();
             outgoingChats = new OutgoingChatBuffer();
         }
-        public Server(IPEndPoint localEP) : this(localEP, null) { }
 
         protected override Task HandleReceive(TimedUdpReceive result)
         {
@@ -121,10 +122,13 @@ namespace BMOnline.Server
             if (!userManager.TryGetUserFromSecret(message.Secret, out User? user))
                 return; //If user not found, drop packet
             user.Renew(Time);
-            user.IncomingChats.ReceiveChatFromRemote(message.Index, message.Content.RemoveWhitespace().RemoveRichText().RemoveDoubleSpaces());
+            string content = message.Content.RemoveWhitespace().RemoveRichText().RemoveDoubleSpaces();
+            if (content.Length > maxChatLength)
+                content = content.Substring(0, maxChatLength);
+            user.IncomingChats.ReceiveChatFromRemote(message.Index, content);
             if (user.IncomingChats.HasReceivedChat)
             {
-                string content = user.IncomingChats.GetReceivedChat();
+                content = user.IncomingChats.GetReceivedChat();
                 if (!string.IsNullOrWhiteSpace(content))
                 {
                     outgoingChats.SendChat($"[{user.Name}] {content}");
@@ -164,7 +168,8 @@ namespace BMOnline.Server
                     Secret = user.Secret,
                     OnlineCount = (ushort)userManager.TotalCount,
                     LatestChatIndex = outgoingChats.LatestIndex,
-                    RequestedChatIndex = user.IncomingChats.IndexToRequest
+                    RequestedChatIndex = user.IncomingChats.IndexToRequest,
+                    MaxChatLength = maxChatLength
                 }.Encode();
                 await SendAsync(gimBytes, user.EndPoint);
 

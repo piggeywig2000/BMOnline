@@ -13,9 +13,11 @@ namespace BMOnline.Server
         {
             Option<ushort> portOption = new Option<ushort>("--port", () => 10998, description: "The port to run the server on. Should be a number from 1 to 65535.");
             Option<string?> passwordOption = new Option<string?>("--password", description: "The server password. Omit this option to allow clients to connect to the server without a password.");
+            Option<ushort> maxChatLengthOption = new Option<ushort>("--max-chat-length", () => 280, "The maximum number of characters allowed in a single chat message. Set this to 0 to disable chat.");
+            maxChatLengthOption.ArgumentHelpName = "length";
 
-            RootCommand rootCommand = new RootCommand() { portOption, passwordOption };
-            rootCommand.SetHandler(RunServer, portOption, passwordOption);
+            RootCommand rootCommand = new RootCommand() { portOption, passwordOption, maxChatLengthOption };
+            rootCommand.SetHandler(RunServer, portOption, passwordOption, maxChatLengthOption);
 
             Parser parser = new CommandLineBuilder(rootCommand)
                 .UseDefaults()
@@ -29,7 +31,7 @@ namespace BMOnline.Server
 
         }
 
-        private static async Task RunServer(ushort port, string? password)
+        private static async Task RunServer(ushort port, string? password, ushort maxChatLength)
         {
             if (string.IsNullOrWhiteSpace(password))
                 password = null;
@@ -38,8 +40,11 @@ namespace BMOnline.Server
                 Log.Error("The server password exceeded the maximum length of 32 characters");
                 return;
             }
-            Log.Info($"Starting server on port {port} with {(password != null ? $"password {password}" : "no password")}");
-            Server server = new Server(new IPEndPoint(IPAddress.Any, port), password);
+            Log.Info($"Starting server");
+            Log.Config($"Port: {port}");
+            Log.Config(password != null ? $"Password: {password}" : "No password");
+            Log.Config(maxChatLength > 0 ? $"Maximum chat message length: {maxChatLength}" : "Chat messages are disabled");
+            Server server = new Server(new IPEndPoint(IPAddress.Any, port), password, maxChatLength);
             await server.RunBusy();
         }
     }

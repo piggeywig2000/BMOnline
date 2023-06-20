@@ -97,6 +97,23 @@ namespace BMOnline.Mod.Chat
 
         public bool IsOpen { get; private set; } = false;
 
+        private ushort maxChatLength = 0;
+        public ushort MaxChatLength
+        {
+            get => maxChatLength;
+            set
+            {
+                maxChatLength = value;
+                if (inputText.text.Length > MaxChatLength)
+                {
+                    inputText.text = inputText.text.Substring(0, MaxChatLength);
+                    cursorPosition = Math.Min(cursorPosition, MaxChatLength);
+                    RepositionCursor();
+                    RepositionMessageList();
+                }
+            }
+        }
+
         private void UpdateChatMessages() => messageList.ForEach(m => m.Update(IsOpen));
 
         public void AddChatMessage(string message)
@@ -259,7 +276,7 @@ namespace BMOnline.Mod.Chat
             while (inputQueue.Count > 0)
             {
                 char character = inputQueue.Dequeue();
-                if (character == '\t')
+                if (character == '\t' || inputText.text.Length >= MaxChatLength)
                     continue;
                 inputText.text = inputText.text.Substring(0, cursorPosition) + character + inputText.text.Substring(cursorPosition, inputText.text.Length - cursorPosition);
                 cursorPosition++;

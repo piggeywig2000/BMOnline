@@ -16,6 +16,7 @@ namespace BMOnline.Client
             this.onlineClient = onlineClient;
 
             OnlineCount = 0;
+            MaxChatLength = 0;
             CoursePlayerCounts = new Dictionary<byte, ushort>();
             foreach (byte courseId in Definitions.CourseIds)
             {
@@ -41,6 +42,7 @@ namespace BMOnline.Client
         }
 
         public ushort OnlineCount { get; set; }
+        public ushort MaxChatLength { get; set; }
         public Dictionary<byte, ushort> CoursePlayerCounts { get; }
         public Dictionary<ushort, ushort> StagePlayerCounts { get; }
 
