@@ -5,9 +5,16 @@
         /// <summary>
         /// Gets a packet representing the state from a few snapshots ago, interpolated between the actual snapshots that were received to create smooth transitions.
         /// </summary>
-        /// <param name="playerId"></param>
-        /// <returns></returns>
+        /// <param name="playerId">The ID of the player to get the snapshot of.</param>
+        /// <returns>A packet representing the current snapshot.</returns>
         public IAddonSnapshotPacket GetCurrentSnapshot(ushort playerId);
+
+        /// <summary>
+        /// Gets a packet representing the most recently received snapshot. There is no interpolation between snapshots.
+        /// </summary>
+        /// <param name="playerId">The ID of the player to get the snapshot of.</param>
+        /// <returns>A packet representing the latest snapshot.</returns>
+        public IAddonSnapshotPacket GetLatestSnapshot(ushort playerId);
 
         /// <summary>
         /// Sets the packet that should be sent. The particular packet passed in may or may not actually be sent, depending on timing. This method should be called as often as possible, preferably every frame.

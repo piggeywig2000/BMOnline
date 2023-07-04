@@ -105,10 +105,6 @@ namespace BMOnline.Client.Relay.Snapshots
             return after;
         }
 
-        /// <summary>
-        /// Gets the current snapshot by interpolating 
-        /// </summary>
-        /// <returns></returns>
         public ISnapshotPacket GetCurrentSnapshot(TimeSpan now)
         {
             if (snapshots.Count == 0)
@@ -146,6 +142,8 @@ namespace BMOnline.Client.Relay.Snapshots
             float gap = (float)BidirectionalUdp.TICK_LENGTH.Multiply(after.Value.Tick - before.Value.Tick).TotalSeconds;
             return before.Value.Snapshot.LerpTo(after.Value.Snapshot, t, gap);
         }
+
+        public ISnapshotPacket GetLatestSnapshot() => snapshots.Count > 0 ? snapshots.Values[snapshots.Count - 1].Snapshot : null;
 
         public void ClearSnapshots() => snapshots.Clear();
     }

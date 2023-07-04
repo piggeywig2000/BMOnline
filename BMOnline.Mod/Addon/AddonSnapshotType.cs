@@ -25,6 +25,12 @@ namespace BMOnline.Mod.Addon
             return ((SnapshotPacketConverter)SnapshotType.GetCurrentSnapshot(playerId, client.Time))?.underlyingPacket;
         }
 
+        public IAddonSnapshotPacket GetLatestSnapshot(ushort playerId)
+        {
+            client.ThrowIfNotInStateSemaphore();
+            return ((SnapshotPacketConverter)SnapshotType.GetLatestSnapshot(playerId))?.underlyingPacket;
+        }
+
         public void SetSnapshotToSend(IAddonSnapshotPacket packet, SnapshotBroadcastType broadcastType, ushort broadcastTypeOperand)
         {
             client.ThrowIfNotInStateSemaphore();

@@ -43,6 +43,8 @@ namespace BMOnline.Client.Relay.Snapshots
 
         public ISnapshotPacket GetCurrentSnapshot(ushort playerId, TimeSpan now) => playerToReceivedSet.TryGetValue(playerId, out RelaySnapshotSet snapshotSet) ? snapshotSet.GetCurrentSnapshot(now) : null;
 
+        public ISnapshotPacket GetLatestSnapshot(ushort playerId) => playerToReceivedSet.TryGetValue(playerId, out RelaySnapshotSet snapshotSet) ? snapshotSet.GetLatestSnapshot() : null;
+
         public void ClearPlayerSnapshots(ushort playerId)
         {
             if (playerToReceivedSet.TryGetValue(playerId, out RelaySnapshotSet set))
