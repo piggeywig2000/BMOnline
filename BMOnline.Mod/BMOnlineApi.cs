@@ -124,6 +124,9 @@ namespace BMOnline.Mod
 
         public void LateUpdate()
         {
+            if (!IsInitialised)
+                return;
+
             settings.Update();
             notificationManager.Update();
 
