@@ -1,0 +1,14 @@
+﻿namespace BMOnline.Mod.Addon
+{
+    public interface IAddonSnapshotPacket : IAddonRequestPacket
+    {
+        /// <summary>
+        /// Returns a new snapshot representing the linear interpolation from the current snapshot to the provided snapshot.
+        /// </summary>
+        /// <param name="destination">The other snapshot to interpolate to.</param>
+        /// <param name="time">The current time, between 0 and 1, where 0 is this snapshot and 1 is the destination snapshot.</param>
+        /// <param name="gapSeconds">The total time difference between the two snapshots in seconds.</param>
+        /// <returns>The linear interpolation from the current snapshot to the provided snapshot.</returns>
+        IAddonSnapshotPacket LerpTo(IAddonSnapshotPacket destination, float time, float gapSeconds);
+    }
+}

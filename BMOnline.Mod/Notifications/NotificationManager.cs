@@ -1,11 +1,11 @@
-﻿using Flash2;
+﻿using BMOnline.Mod.Settings;
+using Flash2;
 using UnityEngine;
 using UnityEngine.UI;
-using static BMOnline.Mod.ModSettings;
 
-namespace BMOnline.Mod
+namespace BMOnline.Mod.Notifications
 {
-    internal class NotificationsManager
+    internal class NotificationManager : INotificationManager
     {
         private const float FLY_TIME = 0.25f;
         private const float VISIBLE_TIME = 5f;
@@ -17,36 +17,18 @@ namespace BMOnline.Mod
         private float timeSinceAnimStart = 0;
         private float animLength = 0;
 
-        public NotificationsManager(ModSettings settings)
+        public NotificationManager(IBmoSettings settings)
         {
             root = Object.Instantiate(AssetBundleItems.NotificationPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
             containerTransform = root.transform.Find("Background").GetComponent<RectTransform>();
             textObject = containerTransform.GetComponentInChildren<Text>();
 
-            settings.OnSettingChanged += (s, e) =>
-            {
-                switch (e.SettingChanged)
-                {
-                    case Setting.ShowNameTags:
-                        ShowNotification(settings.ShowNameTags ? "Name Tags: Visible" : "Name Tags: Hidden");
-                        return;
-                    case Setting.NameTagSize:
-                        ShowNotification($"Name Tag Size: {settings.NameTagSize}");
-                        return;
-                    case Setting.ShowPlayerCounts:
-                        ShowNotification(settings.ShowPlayerCounts ? "Player Counts: Visible" : "Player Counts: Hidden");
-                        return;
-                    case Setting.EnableChat:
-                        ShowNotification(settings.EnableChat ? "Chat: Enabled" : "Chat: Disabled");
-                        return;
-                    case Setting.PlayerVisibility:
-                        ShowNotification(settings.PlayerVisibility == PlayerVisibilityOption.ShowAll ? "Players: Visible" : (settings.PlayerVisibility == PlayerVisibilityOption.HideNear ? "Players: Nearby Hidden" : "Players: Hidden"));
-                        return;
-                    case Setting.PersonalSpace:
-                        ShowNotification($"Personal Space: {settings.PersonalSpace:0.#}");
-                        return;
-                }
-            };
+            settings.ShowNameTags.OnChanged += (s, e) => { ShowNotification(settings.ShowNameTags.Value ? "Name Tags: Visible" : "Name Tags: Hidden"); };
+            settings.NameTagSize.OnChanged += (s, e) => { ShowNotification($"Name Tag Size: {settings.NameTagSize}"); };
+            settings.ShowPlayerCounts.OnChanged += (s, e) => { ShowNotification(settings.ShowPlayerCounts.Value ? "Player Counts: Visible" : "Player Counts: Hidden"); };
+            settings.EnableChat.OnChanged += (s, e) => { ShowNotification(settings.EnableChat.Value ? "Chat: Enabled" : "Chat: Disabled"); };
+            settings.PlayerVisibility.OnChanged += (s, e) => { ShowNotification(settings.PlayerVisibility.Value == PlayerVisibilityOption.ShowAll ? "Players: Visible" : settings.PlayerVisibility.Value == PlayerVisibilityOption.HideNear ? "Players: Nearby Hidden" : "Players: Hidden"); };
+            settings.PersonalSpace.OnChanged += (s, e) => { ShowNotification($"Personal Space: {settings.PersonalSpace:0.#}"); };
         }
 
         /// <summary>
@@ -85,12 +67,9 @@ F5 and +/-: Adjust personal space", 10);
             }
         }
 
-        /// <summary>
-        /// Show the notification text for a certain amount of time
-        /// </summary>
-        /// <param name="text">The notification text. The text will not automatically wrap, so include newlines if the text is long.</param>
-        /// <param name="visibleTime">How long the notification is shown for, in seconds, including the flyin animation.</param>
-        public void ShowNotification(string text, float visibleTime = VISIBLE_TIME)
+        public void ShowNotification(string text) => ShowNotification(text, VISIBLE_TIME);
+
+        public void ShowNotification(string text, float visibleTime)
         {
             textObject.text = text;
             timeSinceAnimStart = 0;

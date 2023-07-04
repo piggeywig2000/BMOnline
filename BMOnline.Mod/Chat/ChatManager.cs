@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BMOnline.Common;
 using BMOnline.Mod.Patches;
+using BMOnline.Mod.Settings;
 using Flash2;
 using UnhollowerRuntimeLib;
 using UnityEngine;
@@ -9,7 +10,7 @@ using UnityEngine.UI;
 
 namespace BMOnline.Mod.Chat
 {
-    internal class ChatManager
+    internal class ChatManager : IChatManager
     {
         private const int MAX_MESSAGES = 50;
 
@@ -35,7 +36,7 @@ namespace BMOnline.Mod.Chat
         }
         private static event EventHandler<GUIEventArgs> OnGUIEvent;
 
-        private readonly ModSettings settings;
+        private readonly IBmoSettings settings;
 
         private readonly GameObject root;
 
@@ -47,7 +48,7 @@ namespace BMOnline.Mod.Chat
 
         private readonly RectTransform messageListMask;
         private readonly Transform messageContainer;
-        private readonly List<ChatMessage> messageList = new List<ChatMessage>(MAX_MESSAGES);
+        private readonly List<ChatMessageUI> messageList = new List<ChatMessageUI>(MAX_MESSAGES);
 
         private int cursorPosition = 0;
         private bool isClosing = false;
@@ -58,7 +59,12 @@ namespace BMOnline.Mod.Chat
         private readonly SpamTracker rightTracker = new SpamTracker(KeyCode.RightArrow);
         private readonly SpamTracker leftTracker = new SpamTracker(KeyCode.LeftArrow);
 
-        public ChatManager(ModSettings settings)
+        public event EventHandler OnChatOpened;
+        public event EventHandler OnChatClosed;
+        public event EventHandler<ChatMessageEventArgs> OnChatMessageAdded;
+        public event EventHandler<ChatMessageEventArgs> OnChatMessageSent;
+
+        public ChatManager(IBmoSettings settings)
         {
             this.settings = settings;
 
@@ -85,14 +91,11 @@ namespace BMOnline.Mod.Chat
                 }
             };
 
-            settings.OnSettingChanged += (s, e) =>
+            settings.EnableChat.OnChanged += (s, e) =>
             {
-                if (e.SettingChanged == ModSettings.Setting.EnableChat)
-                {
-                    root.SetActive(settings.EnableChat);
-                    if (!settings.EnableChat)
-                        Close();
-                }
+                root.SetActive(settings.EnableChat.Value);
+                if (!settings.EnableChat.Value)
+                    Close();
             };
         }
 
@@ -124,8 +127,9 @@ namespace BMOnline.Mod.Chat
                 messageList[0].Destroy();
                 messageList.RemoveAt(0);
             }
-            ChatMessage newMessage = new ChatMessage(message, messageContainer);
+            ChatMessageUI newMessage = new ChatMessageUI(message, messageContainer);
             messageList.Add(newMessage);
+            OnChatMessageAdded?.Invoke(this, new ChatMessageEventArgs(newMessage));
         }
 
         private List<string> CalculateLines()
@@ -210,16 +214,17 @@ namespace BMOnline.Mod.Chat
             }
         }
 
-        private void Open()
+        public void Open()
         {
             IsOpen = true;
             AppInputPatch.PreventKeyboardUpdate = true;
             inputContainer.SetActive(true);
             inputQueue.Clear();
             RepositionMessageList();
+            OnChatOpened?.Invoke(this, EventArgs.Empty);
         }
 
-        private void Close()
+        public void Close()
         {
             IsOpen = false;
             isClosing = true;
@@ -228,6 +233,7 @@ namespace BMOnline.Mod.Chat
             cursorPosition = 0;
             RepositionCursor();
             RepositionMessageList();
+            OnChatClosed?.Invoke(this, EventArgs.Empty);
         }
 
         public string UpdateAndGetSubmittedChat()
@@ -244,7 +250,7 @@ namespace BMOnline.Mod.Chat
                 return null;
             }
 
-            if (!settings.EnableChat)
+            if (!settings.EnableChat.Value)
                 return null;
 
             //Open if t pressed
@@ -262,6 +268,8 @@ namespace BMOnline.Mod.Chat
                 if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && !string.IsNullOrWhiteSpace(inputText.text))
                     submittedMessage = inputText.text;
                 Close();
+                if (submittedMessage != null)
+                    OnChatMessageSent?.Invoke(this, new ChatMessageEventArgs(new ChatMessageText(submittedMessage)));
                 return submittedMessage;
             }
 

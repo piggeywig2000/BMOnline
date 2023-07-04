@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BMOnline.Common;
+using BMOnline.Mod.Players;
+using BMOnline.Mod.Settings;
 using Flash2;
 using UnityEngine;
 using UnityEngine.UI;
@@ -127,23 +130,19 @@ namespace BMOnline.Mod
             }
         }
 
-        private ModSettings settings;
-        private MgCourseDataManager courseDataManager;
+        private IBmoSettings settings;
         private readonly IPlayerCountSet<object>[] counts;
         private uint lastTick = uint.MaxValue;
 
-        public PlayerCountManager(ModSettings settings)
+        public PlayerCountManager(IBmoSettings settings)
         {
             this.settings = settings;
-            settings.OnSettingChanged += (s, e) =>
+            this.settings.ShowPlayerCounts.OnChanged += (s, e) =>
             {
-                if (e.SettingChanged == ModSettings.Setting.ShowPlayerCounts)
-                {
-                    if (settings.ShowPlayerCounts)
-                        RecreatePlayerCountsIfNeeded();
-                    else
-                        DestroyAllItems();
-                }
+                if (settings.ShowPlayerCounts.Value)
+                    RecreatePlayerCountsIfNeeded();
+                else
+                    DestroyAllItems();
             };
 
             Transform uiList = AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform;
@@ -319,7 +318,7 @@ namespace BMOnline.Mod
         private IEnumerable<int> GetStagesInCourse(MainGameDef.eCourse course)
         {
             HashSet<int> stages = new HashSet<int>();
-            MgCourseDatum courseDatum = courseDataManager.getCourseDatum(course);
+            MgCourseDatum courseDatum = MgCourseDataManager.GetCourseDatum(course);
             if (courseDatum != null)
             {
                 foreach (MgCourseDatum.element_t element in courseDatum.elementList)
@@ -394,7 +393,7 @@ namespace BMOnline.Mod
 
         public void RecreatePlayerCountsIfNeeded()
         {
-            if (!settings.ShowPlayerCounts) return;
+            if (!settings.ShowPlayerCounts.Value) return;
             foreach (IPlayerCountSet<object> set in counts)
             {
                 set.RecreateItemsIfNeeded();
@@ -409,12 +408,31 @@ namespace BMOnline.Mod
             }
         }
 
-        public void UpdatePlayerCounts(Dictionary<byte, ushort> courseCounts, Dictionary<ushort, ushort> stageCounts, MgCourseDataManager courseDataManager, uint currentTick)
+        public void UpdatePlayerCounts(IEnumerable<IOnlinePlayer> players, uint currentTick)
         {
-            if (!settings.ShowPlayerCounts || currentTick == lastTick) return;
+            if (!settings.ShowPlayerCounts.Value || currentTick == lastTick) return;
             lastTick = currentTick;
 
-            this.courseDataManager = courseDataManager;
+            //TODO: Remove dictionaries and change how player counts are tracked for modes screen. This code is very temporary and terrible
+            Dictionary<byte, ushort> courseCounts = new Dictionary<byte, ushort>();
+            foreach (byte courseId in Definitions.CourseIds)
+            {
+                courseCounts[courseId] = 0;
+            }
+            Dictionary<ushort, ushort> stageCounts = new Dictionary<ushort, ushort>();
+            foreach (ushort stageId in Definitions.StageIds)
+            {
+                stageCounts[stageId] = 0;
+            }
+            foreach (IOnlinePlayer player in players)
+            {
+                byte course = player.Mode == MainGameDef.eGameKind.TimeAttack || player.Mode == MainGameDef.eGameKind.Challenge ? (byte)player.Course : (byte)0;
+                if (courseCounts.ContainsKey(course))
+                    courseCounts[course] += 1;
+                if (player.Stage.HasValue && stageCounts.ContainsKey(player.Stage.Value))
+                    stageCounts[player.Stage.Value] += 1;
+            }
+
             foreach (IPlayerCountSet<object> set in counts)
             {
                 set.UpdateText(courseCounts, stageCounts);

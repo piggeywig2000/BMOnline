@@ -3,15 +3,18 @@ using UnityEngine.UI;
 
 namespace BMOnline.Mod.Chat
 {
-    internal class ChatMessage
+    internal class ChatMessageUI : IChatMessage
     {
         private readonly CanvasGroup canvasGroup;
         private float timeAlive = 0;
 
-        public ChatMessage(string messageText, Transform parent)
+        public string Text { get; }
+
+        public ChatMessageUI(string messageText, Transform parent)
         {
+            Text = messageText;
             GameObject chatGameObject = GameObject.Instantiate(AssetBundleItems.ChatMessagePrefab, parent);
-            chatGameObject.GetComponentInChildren<Text>().text = messageText;
+            chatGameObject.GetComponentInChildren<Text>().text = Text;
             canvasGroup = chatGameObject.GetComponent<CanvasGroup>();
         }
 

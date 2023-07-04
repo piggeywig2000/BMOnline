@@ -2,7 +2,7 @@
 
 namespace BMOnline.Common.Messaging
 {
-    public abstract class StatusMessage : Message
+    public class StatusMessage : Message
     {
         public uint Secret { get; set; }
         public byte RequestedChatIndex { get; set; }

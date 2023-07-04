@@ -13,14 +13,17 @@ namespace BMOnline.Common.Messaging
                 case MessageType.Login:
                     returnMessage = new LoginMessage();
                     break;
-                case MessageType.MenuStatus:
-                    returnMessage = new MenuStatusMessage();
+                case MessageType.Status:
+                    returnMessage = new StatusMessage();
                     break;
-                case MessageType.GameStatus:
-                    returnMessage = new GameStatusMessage();
+                case MessageType.RelaySnapshotSend:
+                    returnMessage = new RelaySnapshotSendMessage();
                     break;
-                case MessageType.GetPlayerDetails:
-                    returnMessage = new GetPlayerDetailsMessage();
+                case MessageType.RelayRequestGet:
+                    returnMessage = new RelayRequestGetMessage();
+                    break;
+                case MessageType.RelayRequestUpdate:
+                    returnMessage = new RelayRequestUpdateMessage();
                     break;
                 case MessageType.LoginRefuse:
                     returnMessage = new LoginRefuseMessage();
@@ -28,14 +31,14 @@ namespace BMOnline.Common.Messaging
                 case MessageType.GlobalInfo:
                     returnMessage = new GlobalInfoMessage();
                     break;
-                case MessageType.PlayerCount:
-                    returnMessage = new PlayerCountMessage();
+                case MessageType.RelaySnapshotReceive:
+                    returnMessage = new RelaySnapshotReceiveMessage();
                     break;
-                case MessageType.StageUpdate:
-                    returnMessage = new StageUpdateMessage();
+                case MessageType.RelayRequestPlayers:
+                    returnMessage = new RelayRequestPlayersMessage();
                     break;
-                case MessageType.PlayerDetails:
-                    returnMessage = new PlayerDetailsMessage();
+                case MessageType.RelayRequestResponse:
+                    returnMessage = new RelayRequestResponseMessage();
                     break;
                 case MessageType.Chat:
                     returnMessage = new ChatMessage();
@@ -63,14 +66,15 @@ namespace BMOnline.Common.Messaging
             byte[] output;
             MessageType type;
             if (this is LoginMessage) type = MessageType.Login;
-            else if (this is MenuStatusMessage) type = MessageType.MenuStatus;
-            else if (this is GameStatusMessage) type = MessageType.GameStatus;
-            else if (this is GetPlayerDetailsMessage) type = MessageType.GetPlayerDetails;
+            else if (this is StatusMessage) type = MessageType.Status;
+            else if (this is RelaySnapshotSendMessage) type = MessageType.RelaySnapshotSend;
+            else if (this is RelayRequestGetMessage) type = MessageType.RelayRequestGet;
+            else if (this is RelayRequestUpdateMessage) type = MessageType.RelayRequestUpdate;
             else if (this is LoginRefuseMessage) type = MessageType.LoginRefuse;
             else if (this is GlobalInfoMessage) type = MessageType.GlobalInfo;
-            else if (this is PlayerCountMessage) type = MessageType.PlayerCount;
-            else if (this is StageUpdateMessage) type = MessageType.StageUpdate;
-            else if (this is PlayerDetailsMessage) type = MessageType.PlayerDetails;
+            else if (this is RelaySnapshotReceiveMessage) type = MessageType.RelaySnapshotReceive;
+            else if (this is RelayRequestPlayersMessage) type = MessageType.RelayRequestPlayers;
+            else if (this is RelayRequestResponseMessage) type = MessageType.RelayRequestResponse;
             else if (this is ChatMessage) type = MessageType.Chat;
             else throw new InvalidOperationException("Message type to encode is not supported");
 
@@ -88,14 +92,15 @@ namespace BMOnline.Common.Messaging
         public enum MessageType : byte
         {
             Login,
-            MenuStatus,
-            GameStatus,
-            GetPlayerDetails,
+            Status,
+            RelaySnapshotSend,
+            RelayRequestGet,
+            RelayRequestUpdate,
             LoginRefuse,
             GlobalInfo,
-            PlayerCount,
-            StageUpdate,
-            PlayerDetails,
+            RelaySnapshotReceive,
+            RelayRequestPlayers,
+            RelayRequestResponse,
             Chat,
             Unknown = byte.MaxValue
         }

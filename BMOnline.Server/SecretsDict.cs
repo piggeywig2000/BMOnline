@@ -1,5 +1,4 @@
-﻿
-namespace BMOnline.Server
+﻿namespace BMOnline.Server
 {
     internal class SecretsDict<T> where T : notnull
     {

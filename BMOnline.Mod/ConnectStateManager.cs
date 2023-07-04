@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Flash2;
+﻿using Flash2;
 using UnityEngine;
 using UnityEngine.UI;
 

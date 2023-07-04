@@ -3,8 +3,12 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using BMOnline.Client.Relay.Requests;
+using BMOnline.Client.Relay.Snapshots;
 using BMOnline.Common;
 using BMOnline.Common.Messaging;
+using BMOnline.Common.Relay;
+using BMOnline.Common.Relay.Snapshots;
 
 namespace BMOnline.Client
 {
@@ -13,25 +17,39 @@ namespace BMOnline.Client
         private static readonly Random secretGenerator = new Random();
 
         private readonly IPEndPoint serverEndpoint;
+        private readonly OnlineState state;
         private TimeSpan lastPacketReceived = TimeSpan.FromSeconds(-30);
         private bool isLoggedIn = true;
         private readonly string password;
         private uint secret = 0;
 
-        public OnlineClient(IPAddress ip, ushort port, string name, string password) : base(new IPEndPoint(IPAddress.Any, 0))
+        public OnlineClient(IPAddress ip, ushort port, string name, string password, RelaySnapshotType[] snapshotTypes, RelayRequestType[] requestTypes) : base(new IPEndPoint(IPAddress.Any, 0))
         {
             serverEndpoint = new IPEndPoint(ip, port);
-            State = new OnlineState(this);
+            state = new OnlineState(this, snapshotTypes, requestTypes);
             Name = name;
             this.password = password;
         }
-        public OnlineClient(IPAddress ip, ushort port, string name) : this(ip, port, name, null) { }
+        public OnlineClient(IPAddress ip, ushort port, string name, RelaySnapshotType[] snapshotTypes, RelayRequestType[] requestTypes) : this(ip, port, name, null, snapshotTypes, requestTypes) { }
 
         public string Name { get; }
         public bool IsConnected => isLoggedIn && lastPacketReceived > TimeSpan.Zero;
         public LoginRefuseReason? RefuseReason { get; private set; } = null;
-        public OnlineState State { get; }
+        public OnlineState State
+        {
+            get
+            {
+                ThrowIfNotInStateSemaphore();
+                return state;
+            }
+        }
         public SemaphoreSlim StateSemaphore { get; } = new SemaphoreSlim(1);
+
+        public void ThrowIfNotInStateSemaphore()
+        {
+            if (StateSemaphore.CurrentCount > 0)
+                throw new InvalidOperationException("Attempted to access the OnlineClient's State from outside the semaphore.");
+        }
 
         protected override async Task HandleReceive(TimedUdpReceive result)
         {
@@ -45,21 +63,21 @@ namespace BMOnline.Client
             {
                 await HandleGlobalInfo(globalInfoMessage);
             }
-            else if (message is PlayerCountMessage playerCountMessage)
-            {
-                await HandlePlayerCount(playerCountMessage);
-            }
-            else if (message is StageUpdateMessage stageUpdateMessage)
-            {
-                await HandleStageUpdate(stageUpdateMessage, result.TimeReceived);
-            }
-            else if (message is PlayerDetailsMessage playerDetailsMessage)
-            {
-                await HandlePlayerDetails(playerDetailsMessage);
-            }
             else if (message is ChatMessage chatMessage)
             {
                 await HandleChat(chatMessage);
+            }
+            else if (message is RelaySnapshotReceiveMessage snapshotReceiveMessage)
+            {
+                await HandleSnapshotReceiveMessage(snapshotReceiveMessage, result.TimeReceived);
+            }
+            else if (message is RelayRequestPlayersMessage requestPlayersMessage)
+            {
+                await HandleRequestPlayersMessage(requestPlayersMessage);
+            }
+            else if (message is RelayRequestResponseMessage requestResponseMessage)
+            {
+                await HandleRequestResponseMessage(requestResponseMessage);
             }
             else
             {
@@ -72,7 +90,6 @@ namespace BMOnline.Client
             {
                 Log.Success($"Logged in as {Name}");
                 isLoggedIn = true;
-
             }
         }
 
@@ -99,55 +116,66 @@ namespace BMOnline.Client
             StateSemaphore.Release();
         }
 
-        private async Task HandlePlayerCount(PlayerCountMessage message)
-        {
-            if (message.Secret != secret) return;
-
-            await StateSemaphore.WaitAsync();
-            if (State.Location == OnlineState.OnlineLocation.Menu)
-            {
-                for (int i = 0; i < Definitions.CourseIds.Count; i++)
-                {
-                    State.CoursePlayerCounts[Definitions.CourseIds[i]] = message.CourseCounts[i];
-                }
-                for (int i = 0; i < Definitions.StageIds.Count; i++)
-                {
-                    State.StagePlayerCounts[Definitions.StageIds[i]] = message.StageCounts[i];
-                }
-            }
-            StateSemaphore.Release();
-        }
-
-        private async Task HandleStageUpdate(StageUpdateMessage message, TimeSpan timeReceived)
-        {
-            if (message.Secret != secret) return;
-
-            await StateSemaphore.WaitAsync();
-            if (State.Location == OnlineState.OnlineLocation.Game)
-            {
-                State.AddSnapshot(message, timeReceived);
-            }
-            StateSemaphore.Release();
-        }
-
-        private async Task HandlePlayerDetails(PlayerDetailsMessage message)
-        {
-            if (message.Secret != secret) return;
-
-            await StateSemaphore.WaitAsync();
-            if (State.Players.TryGetValue(message.PlayerId, out OnlinePlayer player))
-            {
-                player.SetDetails(message.Name, (byte)(message.Character & 31), (byte)(message.Character >> 5), message.CustomisationsNum, message.CustomisationsChara);
-            }
-            StateSemaphore.Release();
-        }
-
         private async Task HandleChat(ChatMessage message)
         {
             if (message.Secret != secret) return;
 
             await StateSemaphore.WaitAsync();
             State.IncomingChats?.ReceiveChatFromRemote(message.Index, message.Content);
+            StateSemaphore.Release();
+        }
+
+        private async Task HandleSnapshotReceiveMessage(RelaySnapshotReceiveMessage message, TimeSpan timeReceived)
+        {
+            if (message.Secret != secret) return;
+
+            await StateSemaphore.WaitAsync();
+            State.GetRelaySnapshotType(message.RelayId)?.AddSnapshot(message, timeReceived);
+            StateSemaphore.Release();
+        }
+
+        private async Task HandleRequestPlayersMessage(RelayRequestPlayersMessage message)
+        {
+            if (message.Secret != secret) return;
+
+            await StateSemaphore.WaitAsync();
+            //Remove non-existant players
+            ushort[] removedPlayers = State.GetAllPlayers().Where(playerId => message.Players.All(player => player.Id != playerId)).ToArray();
+            foreach (ushort removedPlayer in removedPlayers)
+            {
+                foreach (RelaySnapshotType snapshotType in State.GetAllRelaySnapshotTypes())
+                    snapshotType.RemovePlayer(removedPlayer);
+                foreach (RelayRequestType requestType in State.GetAllRelayRequestTypes())
+                    requestType.RemovePlayer(removedPlayer);
+            }
+            //Update request IDs on all relay request types
+            foreach (RelayRequestType requestType in State.GetAllRelayRequestTypes())
+            {
+                requestType.ClearLatestRequestIds();
+            }
+            foreach (RelayRequestPlayersMessage.RelayRequestPlayer player in message.Players)
+            {
+                for (int i = 0; i < player.RelayIds.Length; i++)
+                {
+                    RelayRequestType requestType = State.GetRelayRequestType(player.RelayIds[i]);
+                    if (requestType != null)
+                    {
+                        if (player.Id == message.ClientPlayerId)
+                            requestType.UpdateServerSideRequestId(player.RequestIds[i]);
+                        else
+                            requestType.UpdatePlayerRequestId(player.Id, player.RequestIds[i]);
+                    }
+                }
+            }
+            StateSemaphore.Release();
+        }
+
+        private async Task HandleRequestResponseMessage(RelayRequestResponseMessage message)
+        {
+            if (message.Secret != secret) return;
+
+            await StateSemaphore.WaitAsync();
+            State.GetRelayRequestType(message.RelayId)?.AddResponse(message);
             StateSemaphore.Release();
         }
 
@@ -177,53 +205,21 @@ namespace BMOnline.Client
                     ProtocolVersion = PROTOCOL_VERSION,
                     Secret = secret,
                     Name = Name,
-                    Password = password
+                    Password = password,
+                    SnapshotIds = State.GetAllRelaySnapshotTypes().Select(t => t.RelayTypeId).ToArray(),
+                    RequestIds = State.GetAllRelayRequestTypes().Select(t => t.RelayTypeId).ToArray()
                 };
                 await SendAsync(loginMessage.Encode(), serverEndpoint);
             }
             else
             {
-                if (State.Location == OnlineState.OnlineLocation.Menu)
+                //Send status message
+                byte[] statusBytes = new StatusMessage()
                 {
-                    //Send status. For now this just acts as a keepalive to stop us getting disconnected
-                    byte[] statusBytes = new MenuStatusMessage()
-                    {
-                        Secret = secret,
-                        RequestedChatIndex = State.IncomingChats?.IndexToRequest ?? 0
-                    }.Encode();
-                    await SendAsync(statusBytes, serverEndpoint);
-                }
-                else if (State.Location == OnlineState.OnlineLocation.Game)
-                {
-                    //Send status
-                    byte[] statusBytes = new GameStatusMessage()
-                    {
-                        Secret = secret,
-                        RequestedChatIndex = State.IncomingChats?.IndexToRequest ?? 0,
-                        Course = State.Course,
-                        Stage = State.Stage,
-                        Tick = CurrentTick,
-                        Position = (State.MyPosition.PosX, State.MyPosition.PosY, State.MyPosition.PosZ),
-                        AngularVelocity = (State.MyPosition.AngVeloX, State.MyPosition.AngVeloY, State.MyPosition.AngVeloZ),
-                        MotionState = (byte)((State.MotionState & (byte)31) | (State.IsOnGround ? (byte)32 : (byte)0)),
-                        Character = (byte)((State.SkinIndex << 5) | (State.Character & 31)),
-                        CustomisationsNum = State.CustomisationsNum,
-                        CustomisationsChara = State.CustomisationsChara,
-                    }.Encode();
-                    await SendAsync(statusBytes, serverEndpoint);
-                    //Send player detail request if there are some players we don't have the details of
-                    ushort[] playerIdsToRequest = State.Players.Values.Where(p => !p.HasDetails).Select(p => p.Id).ToArray();
-                    if (playerIdsToRequest.Length > 0)
-                    {
-                        byte[] requestBytes = new GetPlayerDetailsMessage()
-                        {
-                            Secret = secret,
-                            RequestedPlayers = playerIdsToRequest
-                        }.Encode();
-                        await SendAsync(requestBytes, serverEndpoint);
-                    }
-                }
-
+                    Secret = secret,
+                    RequestedChatIndex = State.IncomingChats?.IndexToRequest ?? 0
+                }.Encode();
+                await SendAsync(statusBytes, serverEndpoint);
                 //Send a chat message
                 string outgoingChat = State.OutgoingChats?.GetChatAtIndex(State.OutgoingChats.RequestedIndex);
                 if (outgoingChat != null)
@@ -235,6 +231,51 @@ namespace BMOnline.Client
                         Content = outgoingChat
                     }.Encode();
                     await SendAsync(chatBytes, serverEndpoint);
+                }
+                //Send snapshots
+                foreach (RelaySnapshotType snapshotType in State.GetAllRelaySnapshotTypes())
+                {
+                    (ISnapshotPacket snapshotToSend, RelaySnapshotBroadcastType broadcastType, ushort broadcastTypeOperand) = snapshotType.GetSnapshotToSend();
+                    if (snapshotToSend != null)
+                    {
+                        byte[] snapshotBytes = new RelaySnapshotSendMessage()
+                        {
+                            Secret = secret,
+                            RelayId = snapshotType.RelayTypeId,
+                            Tick = CurrentTick,
+                            BroadcastType = broadcastType,
+                            BroadcastTypeOperand = broadcastTypeOperand,
+                            RelayData = snapshotToSend.Encode()
+                        }.Encode();
+                        await SendAsync(snapshotBytes, serverEndpoint);
+                    }
+                }
+                //Send requests
+                foreach (RelayRequestType requestType in State.GetAllRelayRequestTypes())
+                {
+                    ushort[] playersToRequest = requestType.GetPlayersToRequest().ToArray();
+                    if (playersToRequest.Length > 0)
+                    {
+                        byte[] playerRequestBytes = new RelayRequestGetMessage()
+                        {
+                            Secret = secret,
+                            RelayId = requestType.RelayTypeId,
+                            RequestedPlayers = playersToRequest
+                        }.Encode();
+                        await SendAsync(playerRequestBytes, serverEndpoint);
+                    }
+                    (byte requestId, IRelayPacket data) = requestType.GetDataToSend();
+                    if (data != null)
+                    {
+                        byte[] requestUpdatebytes = new RelayRequestUpdateMessage()
+                        {
+                            Secret = secret,
+                            RelayId = requestType.RelayTypeId,
+                            RequestId = requestId,
+                            RelayData = data.Encode()
+                        }.Encode();
+                        await SendAsync(requestUpdatebytes, serverEndpoint);
+                    }
                 }
             }
 

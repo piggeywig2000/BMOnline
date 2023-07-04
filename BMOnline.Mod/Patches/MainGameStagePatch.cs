@@ -20,6 +20,9 @@ namespace BMOnline.Mod.Patches
         private static ResetGameObjectDelegate ResetGameObjectInstance;
         private static ResetGameObjectDelegate ResetGameObjectOriginal;
 
+        public static MainGameStage MainGameStage { get; private set; } = null;
+        public static event EventHandler OnReset;
+
         public static unsafe void CreateDetour()
         {
             InitializeInstance = Initialize;
@@ -45,8 +48,7 @@ namespace BMOnline.Mod.Patches
             MgStageDatum mgStageDatum = new MgStageDatum(in_mgStageDatum);
             MgBgDatum mgBgDatum = new MgBgDatum(in_mgBgDatum);
 
-            Main.mainGameStage = __instance;
-            Main.wasMainStageCreated = true;
+            MainGameStage = __instance;
 
             InitializeOriginal(_thisPtr, index, in_gameKind, in_mgStageDatum, in_mgBgDatum, playerIndex);
         }
@@ -55,10 +57,9 @@ namespace BMOnline.Mod.Patches
         {
             MainGameStage __instance = new MainGameStage(_thisPtr);
 
-            if (Main.mainGameStage == __instance)
+            if (MainGameStage == __instance)
             {
-                Main.mainGameStage = null;
-                Main.wasMainStageDestroyed = true;
+                MainGameStage = null;
             }
 
             OnDestroyOriginal(_thisPtr);
@@ -68,9 +69,9 @@ namespace BMOnline.Mod.Patches
         {
             MainGameStage __instance = new MainGameStage(_thisPtr);
 
-            if (Main.mainGameStage == __instance)
+            if (MainGameStage == __instance)
             {
-                Main.wasMainStageReset = true;
+                OnReset?.Invoke(null, EventArgs.Empty);
             }
 
             ResetGameObjectOriginal(_thisPtr, isResetBanana);

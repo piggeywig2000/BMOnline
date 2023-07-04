@@ -1,99 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using BMOnline.Common;
+using BMOnline.Client.Relay.Requests;
+using BMOnline.Client.Relay.Snapshots;
 using BMOnline.Common.Chat;
-using BMOnline.Common.Messaging;
+using BMOnline.Common.Relay.Requests;
+using BMOnline.Common.Relay.Snapshots;
 
 namespace BMOnline.Client
 {
     public class OnlineState
     {
-        private readonly OnlineClient onlineClient;
+        private readonly Dictionary<ushort, RelaySnapshotType> relaySnapshotTypes;
+        private readonly Dictionary<ushort, RelayRequestType> relayRequestTypes;
 
-        public OnlineState(OnlineClient onlineClient)
+        public OnlineState(OnlineClient onlineClient, RelaySnapshotType[] snapshotTypes, RelayRequestType[] requestTypes)
         {
-            this.onlineClient = onlineClient;
-
             OnlineCount = 0;
             MaxChatLength = 0;
-            CoursePlayerCounts = new Dictionary<byte, ushort>();
-            foreach (byte courseId in Definitions.CourseIds)
+
+            relaySnapshotTypes = new Dictionary<ushort, RelaySnapshotType>();
+            relayRequestTypes = new Dictionary<ushort, RelayRequestType>();
+            relaySnapshotTypes.Add(0, new RelaySnapshotType(0, () => new StagePositionSnapshot()));
+            relayRequestTypes.Add(0, new RelayRequestType(0, () => new PlayerInfoRequest()));
+
+            foreach (RelaySnapshotType snapshotType in snapshotTypes)
             {
-                CoursePlayerCounts[courseId] = 0;
+                if (relaySnapshotTypes.ContainsKey(snapshotType.RelayTypeId))
+                    throw new InvalidOperationException("Snapshot types contains multiple types with the same relay ID");
+                relaySnapshotTypes.Add(snapshotType.RelayTypeId, snapshotType);
+            }
+            foreach (RelayRequestType requestType in requestTypes)
+            {
+                if (relaySnapshotTypes.ContainsKey(requestType.RelayTypeId))
+                    throw new InvalidOperationException("Request types contains multiple types with the same relay ID");
+                relayRequestTypes.Add(requestType.RelayTypeId, requestType);
             }
 
-            StagePlayerCounts = new Dictionary<ushort, ushort>();
-            foreach (ushort stageId in Definitions.StageIds)
-            {
-                StagePlayerCounts[stageId] = 0;
-            }
-
-            Course = byte.MaxValue;
-            Stage = ushort.MaxValue;
-            Players = new Dictionary<ushort, OnlinePlayer>();
-
-            Location = OnlineLocation.Menu;
-            MyPosition = new OnlinePosition();
-            MotionState = 0;
-            IsOnGround = false;
-            CustomisationsNum = new byte[] { byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue, byte.MaxValue };
-            CustomisationsChara = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            GetPlayerInfoType().SendData(new PlayerInfoRequest(onlineClient.Name));
         }
 
         public ushort OnlineCount { get; set; }
         public ushort MaxChatLength { get; set; }
-        public Dictionary<byte, ushort> CoursePlayerCounts { get; }
-        public Dictionary<ushort, ushort> StagePlayerCounts { get; }
 
         public OutgoingChatBuffer OutgoingChats { get; set; }
         public IncomingChatBuffer IncomingChats { get; set; }
 
-        public byte Course { get; set; }
-        public ushort Stage { get; set; }
-        public Dictionary<ushort, OnlinePlayer> Players { get; }
+        public RelaySnapshotType GetRelaySnapshotType(ushort relayId) => relaySnapshotTypes.TryGetValue(relayId, out RelaySnapshotType snapshotType) ? snapshotType : null;
+        public RelayRequestType GetRelayRequestType(ushort relayId) => relayRequestTypes.TryGetValue(relayId, out RelayRequestType requestType) ? requestType : null;
 
-        public enum OnlineLocation
-        {
-            Menu,
-            Game
-        }
-        public OnlineLocation Location { get; set; }
-        public OnlinePosition MyPosition { get; set; }
-        public byte MotionState { get; set; }
-        public bool IsOnGround { get; set; }
-        public byte Character { get; set; }
-        public byte SkinIndex { get; set; }
-        public byte[] CustomisationsNum { get; set; }
-        public byte[] CustomisationsChara { get; set; }
+        public RelaySnapshotType GetStagePositionType() => GetRelaySnapshotType(0);
+        public RelayRequestType GetPlayerInfoType() => GetRelayRequestType(0);
 
-        public void AddSnapshot(StageUpdateMessage message, TimeSpan snapshotTime)
-        {
-            if (message.Stage != Stage) return; //If this is for the wrong stage, don't change anything. This packet is outdated
-
-            foreach (StageUpdateMessage.StagePlayer playerInfo in message.Players)
-            {
-                if (!Players.TryGetValue(playerInfo.Id, out OnlinePlayer player))
-                {
-                    player = new OnlinePlayer(playerInfo.Id, onlineClient);
-                    Players.Add(player.Id, player);
-                }
-                player.AddSnapshot(playerInfo.Tick,
-                    new OnlinePosition(playerInfo.Positon.Item1, playerInfo.Positon.Item2, playerInfo.Positon.Item3,
-                    playerInfo.AngularVelocity.Item1, playerInfo.AngularVelocity.Item2, playerInfo.AngularVelocity.Item3),
-                    (byte)(playerInfo.MotionState & (byte)31),
-                    (playerInfo.MotionState & (byte)32) == 32,
-                    snapshotTime - TimeSpan.FromMilliseconds(playerInfo.AgeMs));
-            }
-
-            //Remove players that are gone
-            OnlinePlayer[] expiredPlayers = Players.Values.Where(p => !message.Players.Select(mp => mp.Id).Contains(p.Id)).ToArray(); //Is this too inefficient?
-            foreach (var player in expiredPlayers)
-            {
-                Players.Remove(player.Id);
-            }
-        }
-
-        public void ClearPlayers() => Players.Clear();
+        public IReadOnlyCollection<ushort> GetAllPlayers() => GetPlayerInfoType().GetAllPlayers();
+        public IReadOnlyCollection<RelaySnapshotType> GetAllRelaySnapshotTypes() => relaySnapshotTypes.Values;
+        public IReadOnlyCollection<RelayRequestType> GetAllRelayRequestTypes() => relayRequestTypes.Values;
     }
 }
