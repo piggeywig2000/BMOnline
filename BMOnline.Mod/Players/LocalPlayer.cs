@@ -40,7 +40,11 @@ namespace BMOnline.Mod.Players
                     customisationsNum[i] = (byte)(partsKey == null ? byte.MaxValue : partsKey.m_Number);
                     customisationsChara[i] = (byte)(partsKey == null ? Chara.eKind.Invalid : partsKey.m_CharaKind);
                 }
-                playerInfo = new PlayerInfoRequest("", (byte)gameState.MainGameStage.gameKind, (byte)MgCourseDataManager.currentCourse, (ushort)gameState.MainGameStage.stageIndex, (byte)player.charaKind, (byte)player.charaSkinIndex, customisationsNum, customisationsChara);
+                playerInfo = new PlayerInfoRequest("",
+                    (byte)gameState.MainGameStage.gameKind,
+                    (byte)(gameState.MainGameStage.gameKind == MainGameDef.eGameKind.Practice ? MgCourseDataManager.currentPracticeCourse : MgCourseDataManager.currentCourse),
+                    (ushort)gameState.MainGameStage.stageIndex,
+                    (byte)player.charaKind, (byte)player.charaSkinIndex, customisationsNum, customisationsChara);
             }
             lastPlayerInfo = playerInfo;
             state.GetPlayerInfoType().SendData(playerInfo);
