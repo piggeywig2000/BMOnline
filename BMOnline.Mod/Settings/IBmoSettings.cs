@@ -9,10 +9,18 @@ namespace BMOnline.Mod.Settings
         public IReadOnlyBmoSetting<string> ServerPassword { get; }
         public IBmoSetting<bool> ShowNameTags { get; }
         public IBmoSetting<int> NameTagSize { get; }
-        public IBmoSetting<bool> ShowPlayerCounts { get; }
+        public IBmoSetting<PlayerCountOption> PlayerCountMode { get; }
         public IBmoSetting<bool> EnableChat { get; }
         public IBmoSetting<PlayerVisibilityOption> PlayerVisibility { get; }
         public IBmoSetting<float> PersonalSpace { get; }
+    }
+
+    public enum PlayerCountOption
+    {
+        Mixed,
+        ExactMode,
+        SumOfStages,
+        Disabled
     }
 
     public enum PlayerVisibilityOption

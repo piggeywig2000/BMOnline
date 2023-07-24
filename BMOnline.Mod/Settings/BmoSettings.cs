@@ -66,12 +66,28 @@ namespace BMOnline.Mod.Settings
             Log.Config($"Name Tag Size: {NameTagSize}");
 
             //ShowPlayerCounts
-            if (settings.TryGetValue("ShowPlayerCounts", out object objShowPlayerCounts) && objShowPlayerCounts is bool showPlayerCounts)
+            if (settings.TryGetValue("PlayerCountMode", out object objShowPlayerCounts) && objShowPlayerCounts is string playerCountMode && !string.IsNullOrWhiteSpace(playerCountMode))
             {
-                this.showPlayerCounts = new BmoSetting<bool>(showPlayerCounts);
+                PlayerCountOption mode = PlayerCountOption.Mixed;
+                switch (playerCountMode.ToLower())
+                {
+                    case "mixed":
+                        mode = PlayerCountOption.Mixed;
+                        break;
+                    case "exactmode":
+                        mode = PlayerCountOption.ExactMode;
+                        break;
+                    case "sumofstages":
+                        mode = PlayerCountOption.SumOfStages;
+                        break;
+                    case "disabled":
+                        mode = PlayerCountOption.Disabled;
+                        break;
+                }
+                this.playerCountMode = new BmoSetting<PlayerCountOption>(mode);
             }
-            this.showPlayerCounts ??= new BmoSetting<bool>(true);
-            Log.Config(ShowPlayerCounts.Value ? "Player Counts: Visible" : "Player Counts: Hidden");
+            this.playerCountMode ??= new BmoSetting<PlayerCountOption>(PlayerCountOption.Mixed);
+            Log.Config($"Player Count Mode: {PlayerCountMode:g}");
 
             //EnableChat
             if (settings.TryGetValue("EnableChat", out object objEnableChat) && objEnableChat is bool enableChat)
@@ -127,8 +143,8 @@ namespace BMOnline.Mod.Settings
         private readonly TransformativeBmoSetting<int> nameTagSize;
         public IBmoSetting<int> NameTagSize => nameTagSize;
 
-        private readonly BmoSetting<bool> showPlayerCounts;
-        public IBmoSetting<bool> ShowPlayerCounts => showPlayerCounts;
+        private readonly BmoSetting<PlayerCountOption> playerCountMode;
+        public IBmoSetting<PlayerCountOption> PlayerCountMode => playerCountMode;
 
         private readonly BmoSetting<bool> enableChat;
         public IBmoSetting<bool> EnableChat => enableChat;
@@ -145,9 +161,9 @@ namespace BMOnline.Mod.Settings
             {
                 ShowNameTags.SetValue(!ShowNameTags.Value);
             }
-            if (ShowPlayerCounts.IsHotkeyEnabled && Input.GetKeyDown(KeyCode.F3))
+            if (PlayerCountMode.IsHotkeyEnabled && Input.GetKeyDown(KeyCode.F3))
             {
-                ShowPlayerCounts.SetValue(!ShowPlayerCounts.Value);
+                PlayerCountMode.SetValue((PlayerCountOption)(((int)PlayerCountMode.Value + 1) % 4));
             }
             if (EnableChat.IsHotkeyEnabled && Input.GetKeyDown(KeyCode.F4))
             {

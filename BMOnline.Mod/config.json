@@ -24,9 +24,9 @@
     "Description": "Hotkey: F2 and +/-. \nThe size of the name tags. \nDefault size is 48.",
     "Category": "In-Game Settings"
   },
-  "ShowPlayerCounts": {
-    "Value": true,
-    "Description": "Hotkey: F3. \nWhether to show the number of players playing each stage on the stage selection screen.",
+  "PlayerCountMode": {
+    "Value": "Mixed",
+    "Description": "Hotkey: F3. \nHow the number of players playing each stage, course, and mode are shown. Valid values are \"Mixed\", \"ExactMode\", \"SumOfStages\", and \"Disabled\".",
     "Category": "In-Game Settings"
   },
   "EnableChat": {

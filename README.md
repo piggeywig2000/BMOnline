@@ -32,7 +32,7 @@ This mod has some extra keyboard controls. Currently they can't be changed.
 - `F1`: Show the keyboard controls
 - `F2`: Toggle the Show Name Tags setting
 - `F2` and `+` or `-`: Change the Name Tags Size setting
-- `F3`: Toggle the Show Player Counts setting
+- `F3`: Change the Player Count Mode setting
 - `F4`: Toggle the Enable Chat setting
 - `F5`: Change the Player Visibility setting
 - `F5` and `+` or `-`: Change the Personal Space setting
@@ -47,7 +47,11 @@ The mod settings can be changed in the Banana Mod Manager by clicking on the mod
 - In-Game Settings: In-game settings related to the mod
   - Show Name Tags: Whether to show the player names above the other players. By default this is enabled.
   - Name Tag Size: The size of the name tags. By default this is 48.
-  - Show Player Counts: Whether to show the number of players playing each stage on the stage, course, and mode selection screens. By default this is enabled.
+  - Player Count Mode: How the number of players playing each stage, course, and mode are shown. There are 4 valid values:
+    - Mixed: Behaves like ExactMode for challenge and time attack modes, and behaves like SumOfStages for all other modes. This is the default value.
+    - ExactMode: The mode and course player counts show the number of players playing that specific mode or course.
+    - SumOfStages: The mode and course player counts show the total number of players playing each stage in that mode or course, even if they're playing on a different mode or course.
+    - Disabled: The stage, course, and mode player counts are not shown.
   - Enable Chat: Whether to show the chat. If disabled, you will not be able to send or receive chat messages. By default this is enabled.
   - Player Visibility: The visibility of the other players. There are 3 valid values:
     - ShowAll: Players are always visible. This is the default value.

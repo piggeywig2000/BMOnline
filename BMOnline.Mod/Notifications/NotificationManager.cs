@@ -25,7 +25,7 @@ namespace BMOnline.Mod.Notifications
 
             settings.ShowNameTags.OnChanged += (s, e) => { ShowNotification(settings.ShowNameTags.Value ? "Name Tags: Visible" : "Name Tags: Hidden"); };
             settings.NameTagSize.OnChanged += (s, e) => { ShowNotification($"Name Tag Size: {settings.NameTagSize}"); };
-            settings.ShowPlayerCounts.OnChanged += (s, e) => { ShowNotification(settings.ShowPlayerCounts.Value ? "Player Counts: Visible" : "Player Counts: Hidden"); };
+            settings.PlayerCountMode.OnChanged += (s, e) => { ShowNotification(settings.PlayerCountMode.Value == PlayerCountOption.Mixed ? "Player Count Mode: Mixed" : settings.PlayerCountMode.Value == PlayerCountOption.ExactMode ? "Player Count Mode: Exact Mode" : settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages ? "Player Count Mode: Sum Of Stages" : "Player Count Mode: Disabled"); };
             settings.EnableChat.OnChanged += (s, e) => { ShowNotification(settings.EnableChat.Value ? "Chat: Enabled" : "Chat: Disabled"); };
             settings.PlayerVisibility.OnChanged += (s, e) => { ShowNotification(settings.PlayerVisibility.Value == PlayerVisibilityOption.ShowAll ? "Players: Visible" : settings.PlayerVisibility.Value == PlayerVisibilityOption.HideNear ? "Players: Nearby Hidden" : "Players: Hidden"); };
             settings.PersonalSpace.OnChanged += (s, e) => { ShowNotification($"Personal Space: {settings.PersonalSpace:0.#}"); };
@@ -60,9 +60,9 @@ T: Open the chat
 F1: Show keybinds
 F2: Toggle name tag visibility
 F2 and +/-: Adjust name tag size
-F3: Toggle player counts visibility
+F3: Change player count mode
 F4: Toggle chat visibility
-F5: Toggle player visibility
+F5: Change player visibility
 F5 and +/-: Adjust personal space", 10);
             }
         }
