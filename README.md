@@ -49,8 +49,8 @@ The mod settings can be changed in the Banana Mod Manager by clicking on the mod
   - Name Tag Size: The size of the name tags. By default this is 48.
   - Player Count Mode: How the number of players playing each stage, course, and mode are shown. There are 4 valid values:
     - Mixed: Behaves like ExactMode for challenge and time attack modes, and behaves like SumOfStages for all other modes. This is the default value.
-    - ExactMode: The mode and course player counts show the number of players playing that specific mode or course.
-    - SumOfStages: The mode and course player counts show the total number of players playing each stage in that mode or course, even if they're playing on a different mode or course.
+    - ExactMode: The mode and course player counts show the number of players playing that specific mode or course. The stage player counts show the number of players playing the stage in that specific course and mode, even if there are other players playing the stage on a different course or mode.
+    - SumOfStages: The mode and course player counts show the total number of players playing each stage in that mode or course, even if they're playing on a different mode or course. The stage player counts show the total number of players playing that stage, regardless of the course and mode that they're on.
     - Disabled: The stage, course, and mode player counts are not shown.
   - Enable Chat: Whether to show the chat. If disabled, you will not be able to send or receive chat messages. By default this is enabled.
   - Player Visibility: The visibility of the other players. There are 3 valid values:
