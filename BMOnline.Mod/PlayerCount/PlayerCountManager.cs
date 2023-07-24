@@ -144,7 +144,7 @@ namespace BMOnline.Mod.PlayerCount
                         if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
                             return GetStagesInCourse(course).Sum(stageId => counts.StageCounts[(ushort)stageId]);
                         else if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
-                            return counts.CourseCounts[course];
+                            return counts.ModeToPlayers[SelectorDef.MainGameKind.Story].Concat(counts.ModeToPlayers[SelectorDef.MainGameKind.Special]).Count(p => p.Course == course);
                     }
                     return 0;
                 }),
@@ -152,7 +152,11 @@ namespace BMOnline.Mod.PlayerCount
                 {
                     //Story/special mode stage selection
                     ushort stageId = GetStageFromTextKey(itemData.textKey);
-                    return counts.StageCounts[stageId];
+                    if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
+                        return counts.StageCounts[stageId];
+                    else if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
+                        return counts.ModeToPlayers[SelectorDef.MainGameKind.Story].Concat(counts.ModeToPlayers[SelectorDef.MainGameKind.Special]).Count(p => p.Stage == stageId);
+                    return 0;
                 }),
                 new PlayerCountSet<SelIconAndBestTimeItemData>(uiList, "c_sel_r_scr_mode_scr_CTB_0", (itemData, counts) =>
                 {
@@ -160,7 +164,9 @@ namespace BMOnline.Mod.PlayerCount
                     SelMgCmCourseItemData courseData = itemData.TryCast<SelMgCmCourseItemData>();
                     if (courseData != null)
                     {
-                        if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
+                        if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
+                            return counts.ModeToPlayers[SelectorDef.MainGameKind.Challenge_SMB1].Concat(counts.ModeToPlayers[SelectorDef.MainGameKind.Challenge_SMB2]).Count(p => p.Course == courseData.course);
+                        else if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed)
                             return counts.CourseCounts[courseData.course];
                         else if (settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
                             return GetStagesInCourse(courseData.course).Sum(stageId => counts.StageCounts[(ushort)stageId]);
@@ -174,14 +180,18 @@ namespace BMOnline.Mod.PlayerCount
                     if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
                         return GetStagesInCourse(course).Sum(stageId => counts.StageCounts[(ushort)stageId]);
                     else if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
-                        return counts.CourseCounts[course];
+                        return counts.ModeToPlayers[SelectorDef.MainGameKind.Practice_SMB1].Count(p => p.Course == course);
                     return 0;
                 }),
                 new PlayerCountSet<SelBestTimeItemData>(uiList, "c_sel_r_scr_TB_0", (itemData, counts) =>
                 {
                     //SMB1 practice mode stage selection
                     ushort stageId = GetStageFromTextKey(itemData.textKey);
-                    return counts.StageCounts[stageId];
+                    if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
+                        return counts.StageCounts[stageId];
+                    else if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
+                        return counts.ModeToPlayers[SelectorDef.MainGameKind.Practice_SMB1].Count(p => p.Stage == stageId);
+                    return 0;
                 }),
                 new PlayerCountSet<SelBestTimeItemData>(uiList, "c_sel_r_scr_mode_u_scr_TB_0", (itemData, counts) =>
                 {
@@ -192,10 +202,14 @@ namespace BMOnline.Mod.PlayerCount
                         if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
                             return GetStagesInCourse(course).Sum(stageId => counts.StageCounts[(ushort)stageId]);
                         else if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
-                            return counts.CourseCounts[course];
+                            return counts.ModeToPlayers[SelectorDef.MainGameKind.Practice_SMB2].Count(p => p.Course == course);
                     }
                     ushort stage = GetStageFromTextKey(itemData.textKey);
-                    return counts.StageCounts[stage];
+                    if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
+                        return counts.StageCounts[stage];
+                    else if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
+                        return counts.ModeToPlayers[SelectorDef.MainGameKind.Practice_SMB2].Count(p => p.Stage == stage);
+                    return 0;
                 }),
                 new PlayerCountSet<SelBestTimeItemData>(uiList, "c_sel_r_scr_mode_scr_info_TB_0", (itemData, counts) =>
                 {
@@ -208,7 +222,7 @@ namespace BMOnline.Mod.PlayerCount
                         if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
                             return GetStagesInCourse(course).Sum(stageId => counts.StageCounts[(ushort)stageId]);
                         else if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
-                            return counts.CourseCounts[course];
+                            return counts.ModeToPlayers[SelectorDef.MainGameKind.Practice_SMB2].Count(p => p.Course == course);
                     }
                     return 0;
                 }),
@@ -218,7 +232,9 @@ namespace BMOnline.Mod.PlayerCount
                     SelMgTaCourseItemData courseData = itemData.TryCast<SelMgTaCourseItemData>();
                     if (courseData != null)
                     {
-                        if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed || settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
+                        if (settings.PlayerCountMode.Value == PlayerCountOption.ExactMode)
+                            return counts.ModeToPlayers[SelectorDef.MainGameKind.TimeAttack].Count(p => p.Course == courseData.course);
+                        else if (settings.PlayerCountMode.Value == PlayerCountOption.Mixed)
                             return counts.CourseCounts[courseData.course];
                         else if (settings.PlayerCountMode.Value == PlayerCountOption.SumOfStages)
                             return GetStagesInCourse(courseData.course).Sum(stageId => counts.StageCounts[(ushort)stageId]);
@@ -335,7 +351,7 @@ namespace BMOnline.Mod.PlayerCount
                     case MainGameDef.eGameKind.Practice:
                         if (player.Course >= MainGameDef.eCourse.Smb1_Casual && player.Course <= MainGameDef.eCourse.Smb1_Marathon)
                             mode = SelectorDef.MainGameKind.Practice_SMB1;
-                        else if (player.Course >= MainGameDef.eCourse.Smb2_Casual && player.Course <= MainGameDef.eCourse.Smb2_Marathon)
+                        else if ((player.Course >= MainGameDef.eCourse.Smb2_StoryWorld01 && player.Course <= MainGameDef.eCourse.Smb2_StoryWorld10) || (player.Course >= MainGameDef.eCourse.Smb2_Casual && player.Course <= MainGameDef.eCourse.Smb2_Marathon))
                             mode = SelectorDef.MainGameKind.Practice_SMB2;
                         break;
                     case MainGameDef.eGameKind.TimeAttack: mode = SelectorDef.MainGameKind.TimeAttack; break;
@@ -348,6 +364,8 @@ namespace BMOnline.Mod.PlayerCount
                     data.CourseCounts.IncrementCount(player.Course);
                 if (player.Stage.HasValue)
                     data.StageCounts.IncrementCount(player.Stage.Value);
+                if (data.ModeToPlayers.TryGetValue(mode, out List<IOnlinePlayer> list))
+                    list.Add(player);
             }
 
             foreach (IPlayerCountSet<object> set in counts)
