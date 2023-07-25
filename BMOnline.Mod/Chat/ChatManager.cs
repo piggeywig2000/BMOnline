@@ -68,7 +68,7 @@ namespace BMOnline.Mod.Chat
         {
             this.settings = settings;
 
-            root = UnityEngine.Object.Instantiate(AssetBundleItems.ChatPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
+            root = UnityEngine.Object.Instantiate(AssetBundleItems.ChatPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").Find("c_system_0").Find("safe_area"));
             ClassInjector.RegisterTypeInIl2Cpp<GetCharacterBehaviour>();
             root.AddComponent<GetCharacterBehaviour>();
 

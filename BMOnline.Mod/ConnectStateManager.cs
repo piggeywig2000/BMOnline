@@ -17,7 +17,7 @@ namespace BMOnline.Mod
 
         public ConnectStateManager()
         {
-            root = GameObject.Instantiate(AssetBundleItems.ConnectStatusPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
+            root = GameObject.Instantiate(AssetBundleItems.ConnectStatusPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").Find("c_system_0").Find("safe_area"));
             Transform container = root.transform.Find("Container");
             gameobjectConnected = container.Find("Connected").gameObject;
             gameobjectConnecting = container.Find("Connecting").gameObject;

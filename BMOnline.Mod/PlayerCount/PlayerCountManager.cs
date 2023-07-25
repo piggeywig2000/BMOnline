@@ -24,7 +24,7 @@ namespace BMOnline.Mod.PlayerCount
                     DestroyAllItems();
             };
 
-            Transform uiList = AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform;
+            Transform uiList = AppSystemUI.Instance.transform.Find("UIList_GUI_Front");
             counts = new IPlayerCountSet<object>[]
             {
                 new PlayerCountSet<SelTextItemData>(uiList, "c_sel_r_scr_T_0", (itemData, counts) =>

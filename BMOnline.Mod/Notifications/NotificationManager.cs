@@ -19,7 +19,7 @@ namespace BMOnline.Mod.Notifications
 
         public NotificationManager(IBmoSettings settings)
         {
-            root = Object.Instantiate(AssetBundleItems.NotificationPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").transform.Find("c_system_0").Find("safe_area"));
+            root = Object.Instantiate(AssetBundleItems.NotificationPrefab, AppSystemUI.Instance.transform.Find("UIList_GUI_Front").Find("c_system_0").Find("safe_area"));
             containerTransform = root.transform.Find("Background").GetComponent<RectTransform>();
             textObject = containerTransform.GetComponentInChildren<Text>();
 
