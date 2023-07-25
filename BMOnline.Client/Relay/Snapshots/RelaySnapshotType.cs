@@ -34,7 +34,7 @@ namespace BMOnline.Client.Relay.Snapshots
             {
                 if (!playerToReceivedSet.TryGetValue(playerSnapshot.Id, out RelaySnapshotSet snapshotSet))
                 {
-                    snapshotSet = new RelaySnapshotSet(snapshotConstructor);
+                    snapshotSet = new RelaySnapshotSet(RelayTypeId, snapshotConstructor);
                     playerToReceivedSet.Add(playerSnapshot.Id, snapshotSet);
                 }
                 snapshotSet.AddSnapshot(playerSnapshot, timeReceived);

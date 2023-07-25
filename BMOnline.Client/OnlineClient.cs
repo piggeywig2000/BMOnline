@@ -238,16 +238,23 @@ namespace BMOnline.Client
                     (ISnapshotPacket snapshotToSend, RelaySnapshotBroadcastType broadcastType, ushort broadcastTypeOperand) = snapshotType.GetSnapshotToSend();
                     if (snapshotToSend != null)
                     {
-                        byte[] snapshotBytes = new RelaySnapshotSendMessage()
+                        try
                         {
-                            Secret = secret,
-                            RelayId = snapshotType.RelayTypeId,
-                            Tick = CurrentTick,
-                            BroadcastType = broadcastType,
-                            BroadcastTypeOperand = broadcastTypeOperand,
-                            RelayData = snapshotToSend.Encode()
-                        }.Encode();
-                        await SendAsync(snapshotBytes, serverEndpoint);
+                            byte[] snapshotBytes = new RelaySnapshotSendMessage()
+                            {
+                                Secret = secret,
+                                RelayId = snapshotType.RelayTypeId,
+                                Tick = CurrentTick,
+                                BroadcastType = broadcastType,
+                                BroadcastTypeOperand = broadcastTypeOperand,
+                                RelayData = snapshotToSend.Encode()
+                            }.Encode();
+                            await SendAsync(snapshotBytes, serverEndpoint);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Warning($"Exception while encoding relay snapshot packet with type ID {snapshotType.RelayTypeId}: {e}");
+                        }
                     }
                 }
                 //Send requests
@@ -267,14 +274,21 @@ namespace BMOnline.Client
                     (byte requestId, IRelayPacket data) = requestType.GetDataToSend();
                     if (data != null)
                     {
-                        byte[] requestUpdatebytes = new RelayRequestUpdateMessage()
+                        try
                         {
-                            Secret = secret,
-                            RelayId = requestType.RelayTypeId,
-                            RequestId = requestId,
-                            RelayData = data.Encode()
-                        }.Encode();
-                        await SendAsync(requestUpdatebytes, serverEndpoint);
+                            byte[] requestUpdatebytes = new RelayRequestUpdateMessage()
+                            {
+                                Secret = secret,
+                                RelayId = requestType.RelayTypeId,
+                                RequestId = requestId,
+                                RelayData = data.Encode()
+                            }.Encode();
+                            await SendAsync(requestUpdatebytes, serverEndpoint);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Warning($"Exception while encoding relay request packet with type ID {requestType.RelayTypeId}: {e}");
+                        }
                     }
                 }
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BMOnline.Common;
 using BMOnline.Common.Messaging;
 using BMOnline.Common.Relay;
 
@@ -67,10 +68,17 @@ namespace BMOnline.Client.Relay.Requests
             if (!playerToLatestRequestId.ContainsKey(responseMessage.PlayerId))
                 return;
             IRelayPacket response = packetConstructor();
-            response.Decode(responseMessage.RelayData);
-            if (!playerToReceivedRequest.ContainsKey(responseMessage.PlayerId) || playerToReceivedRequest[responseMessage.PlayerId].requestId != responseMessage.RequestId)
-                updatedPlayers.Add(responseMessage.PlayerId);
-            playerToReceivedRequest[responseMessage.PlayerId] = (responseMessage.RequestId, response);
+            try
+            {
+                response.Decode(responseMessage.RelayData);
+                if (!playerToReceivedRequest.ContainsKey(responseMessage.PlayerId) || playerToReceivedRequest[responseMessage.PlayerId].requestId != responseMessage.RequestId)
+                    updatedPlayers.Add(responseMessage.PlayerId);
+                playerToReceivedRequest[responseMessage.PlayerId] = (responseMessage.RequestId, response);
+            }
+            catch (Exception e)
+            {
+                Log.Warning($"Exception while decoding relay request packet with type ID {responseMessage.RelayId}: {e}");
+            }
         }
 
         public IRelayPacket GetPlayerData(ushort playerId)

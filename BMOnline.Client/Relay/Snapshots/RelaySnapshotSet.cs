@@ -26,11 +26,13 @@ namespace BMOnline.Client.Relay.Snapshots
         private const double TICK_DELAY = 4; //We have a delay of 4 ticks before showing the position, to allow the packets some time to arrive
         private readonly SortedList<uint, SnapshotEntry> snapshots;
         private readonly Func<ISnapshotPacket> snapshotConstructor;
+        private readonly ushort relayTypeId;
 
-        public RelaySnapshotSet(Func<ISnapshotPacket> snapshotConstructor)
+        public RelaySnapshotSet(ushort relayTypeId, Func<ISnapshotPacket> snapshotConstructor)
         {
             snapshots = new SortedList<uint, SnapshotEntry>();
             this.snapshotConstructor = snapshotConstructor;
+            this.relayTypeId = relayTypeId;
         }
 
         public void AddSnapshot(RelaySnapshotReceiveMessage.RelaySnapshotPlayer snapshot, TimeSpan timeReceived)
@@ -38,8 +40,15 @@ namespace BMOnline.Client.Relay.Snapshots
             if (snapshots.ContainsKey(snapshot.Tick)) return; //Don't add if snapshot already exists (due to duplicate packet)
             if (snapshots.Count == MAX_SNAPSHOTS) snapshots.RemoveAt(0);
             ISnapshotPacket snapshotData = snapshotConstructor();
-            snapshotData.Decode(snapshot.RelayData);
-            snapshots.Add(snapshot.Tick, new SnapshotEntry(snapshot.Tick, timeReceived - TimeSpan.FromMilliseconds(snapshot.AgeMs), snapshotData));
+            try
+            {
+                snapshotData.Decode(snapshot.RelayData);
+                snapshots.Add(snapshot.Tick, new SnapshotEntry(snapshot.Tick, timeReceived - TimeSpan.FromMilliseconds(snapshot.AgeMs), snapshotData));
+            }
+            catch (Exception e)
+            {
+                Log.Warning($"Exception while decoding relay snapshot packet with type ID {relayTypeId}: {e}");
+            }
         }
 
         /// <summary>
