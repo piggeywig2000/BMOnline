@@ -108,7 +108,9 @@ In the BMOnline.Mod directory (which also contains the `BMOnline.Mod.csproj` fil
 ```
 `OutputPath` refers to the directory to build the project into. `ReferencePath` refers to the directory that contains the game's DLLs. You should modify these paths if they're different on your computer.
 
-## Using the API
+## Mod API
 This mod has an API that other mods can use to add custom functionality.
 
-Add `BMOnline.Mod.dll` to your mod as a reference, and access the API using the BMOnline.Mod.Main.Api interface.
+Add `BMOnline.Mod.dll` to your mod as a reference, and access the API using the BMOnline.Mod.Main.Api interface. Your mod's manifest must contain the "Priority" field, with a value higher than 0.
+
+Aside from the documentation comments on the methods, this API is undocumented. If you'd like to develop an addon mod I'd recommend joining the Banana Mania Modding [Discord Server](https://discord.gg/dbNTKSU2Rt) where you can ask me questions.
