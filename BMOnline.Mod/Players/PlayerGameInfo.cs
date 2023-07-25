@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BMOnline.Common.Relay.Snapshots;
 using BMOnline.Mod.Patches;
 using BMOnline.Mod.Settings;
@@ -11,11 +12,30 @@ namespace BMOnline.Mod.Players
 {
     internal class PlayerGameInfo : IPlayerGameInfo
     {
+        private readonly struct BallRenderer
+        {
+            public readonly Renderer Renderer;
+            public readonly float Alpha;
+            public readonly float Glossiness;
+            public readonly float GlossMapScale;
+            public readonly float Metallic;
+
+            public BallRenderer(Renderer renderer, float alpha, float glossiness, float glossMapScale, float metallic)
+            {
+                Renderer = renderer;
+                Alpha = alpha;
+                Glossiness = glossiness;
+                GlossMapScale = glossMapScale;
+                Metallic = metallic;
+            }
+        }
+
         private readonly IBmoSettings settings;
         private readonly Transform behaviourTransform;
         private readonly Transform physicalTransform;
         private readonly GravityTilt gravityTilt;
         private readonly PlayerMotion playerMotion;
+        private readonly List<BallRenderer> ballRenderers;
 
         private bool isActive;
         private Vector3 position;
@@ -64,6 +84,17 @@ namespace BMOnline.Mod.Players
             NameTagText.text = name;
 
             Reset(mainGameStage);
+
+            Transform ballTransform = behaviourTransform.transform.Find("ball");
+            ballRenderers = new List<BallRenderer>();
+            foreach (Renderer renderer in ballTransform.GetComponentsInChildren<Renderer>())
+            {
+                ballRenderers.Add(new BallRenderer(renderer,
+                    renderer.material.color.a,
+                    renderer.material.GetFloat("_Glossiness"),
+                    renderer.material.GetFloat("_GlossMapScale"),
+                    renderer.material.GetFloat("_Metallic")));
+            }
         }
 
         public GameObject RootGameObject { get; }
@@ -117,6 +148,19 @@ namespace BMOnline.Mod.Players
             isOnGround = snapshot.IsOnGround;
         }
 
+        private void SetAlpha(float alpha)
+        {
+            ballRenderers.RemoveAll(r => r.Renderer == null);
+            foreach (BallRenderer ballRenderer in ballRenderers)
+            {
+                ballRenderer.Renderer.material.color = new Color(ballRenderer.Renderer.material.color.r, ballRenderer.Renderer.material.color.g, ballRenderer.Renderer.material.color.b, ballRenderer.Alpha * alpha);
+                ballRenderer.Renderer.material.SetFloat("_Glossiness", ballRenderer.Glossiness * alpha);
+                ballRenderer.Renderer.material.SetFloat("_GlossMapScale", ballRenderer.GlossMapScale * alpha);
+                ballRenderer.Renderer.material.SetFloat("_Metallic", ballRenderer.Metallic * alpha);
+            }
+            NameTagText.canvasRenderer.SetColor(new Color(NameTagText.canvasRenderer.GetColor().r, NameTagText.canvasRenderer.GetColor().g, NameTagText.canvasRenderer.GetColor().b, alpha));
+        }
+
         public void LateUpdate(MainGameStage mainGameStage)
         {
             if (RootGameObject.activeSelf != isActive)
@@ -142,12 +186,14 @@ namespace BMOnline.Mod.Players
             }
 
             bool isVisible = true;
+            float alpha = 1.0f;
             switch (settings.PlayerVisibility.Value)
             {
                 case PlayerVisibilityOption.ShowAll:
                     isVisible = true;
                     break;
                 case PlayerVisibilityOption.HideNear:
+                    isVisible = true;
                     if (!MainGame.isViewStage && !MainGame.isViewPlayer)
                     {
                         //Set visibility based on distance 
@@ -167,10 +213,10 @@ namespace BMOnline.Mod.Players
                                 Mathf.Pow(remotePlayerPos.y - (localPlayerPos.y + (t * (cameraPos.y - localPlayerPos.y))), 2) +
                                 Mathf.Pow(remotePlayerPos.z - (localPlayerPos.z + (t * (cameraPos.z - localPlayerPos.z))), 2);
                         }
-                        isVisible = remoteDistance >= Math.Pow(settings.PersonalSpace.Value, 2);
+                        float min = settings.PersonalSpace.Value;
+                        float max = min + Mathf.Min(min, 8f);
+                        alpha = Mathf.Lerp(0, 1, (Mathf.Sqrt(remoteDistance) - min) / (max - min));
                     }
-                    else
-                        isVisible = true;
                     break;
                 case PlayerVisibilityOption.HideAll:
                     isVisible = false;
@@ -178,6 +224,7 @@ namespace BMOnline.Mod.Players
             }
             if (RootGameObject.activeSelf != isVisible)
                 RootGameObject.SetActive(isVisible);
+            SetAlpha(alpha);
         }
 
         public void Reset(MainGameStage mainGameStage)
