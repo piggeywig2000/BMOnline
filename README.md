@@ -107,3 +107,8 @@ In the BMOnline.Mod directory (which also contains the `BMOnline.Mod.csproj` fil
 </Project>
 ```
 `OutputPath` refers to the directory to build the project into. `ReferencePath` refers to the directory that contains the game's DLLs. You should modify these paths if they're different on your computer.
+
+## Using the API
+This mod has an API that other mods can use to add custom functionality.
+
+Add `BMOnline.Mod.dll` to your mod as a reference, and access the API using the BMOnline.Mod.Main.Api interface.
