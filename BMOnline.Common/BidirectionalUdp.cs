@@ -13,7 +13,7 @@ namespace BMOnline.Common
 #if DEBUG
         public const byte PROTOCOL_VERSION = 0; //0 is used for test versions
 #else
-        public const byte PROTOCOL_VERSION = 3;
+        public const byte PROTOCOL_VERSION = 4;
 #endif
         private readonly UdpClient client;
 
