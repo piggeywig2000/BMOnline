@@ -127,12 +127,14 @@ namespace BMOnline.Mod.Patches
 
                 TextData textData = new TextData();
                 textData.textDictionary.Add("maingame_onlineracemode", new TextData.Context() { text = "Online Race Mode" });
+                textData.textDictionary.Add("maingame_howtoplay_onlinerace", new TextData.Context() { text = "Race against online players to reach the goal first. Everyone starts at the same time and the first to reach the goal wins. Press <sprite name=\"MainGame_QuickRetry\"> to retry the stage right away.", isUseTag = true });
                 textData.textDictionary.Add("tips_main_onlinerace01", new TextData.Context() { text = "Press <sprite name=\"MainGame_QuickRetry\"> in Online Race Mode to retry the stage right away!", isUseTag = true });
                 Framework.Text.TextManager.AddData(GameParam.language, textData);
 
                 AssetBundleCache.element_t element = new AssetBundleCache.element_t();
                 AssetBundleCache.Instance.m_assetBundleNameToEntityDict.Add("bmonline_assetcache", element);
                 AssetBundleCache.Instance.m_pathToAssetBundleNameDict.Add("ui/t_tmb_mode_online_race.tga", "bmonline_assetcache");
+                AssetBundleCache.Instance.m_pathToAssetBundleNameDict.Add("ui/t_sousa_main_online_race.tga", "bmonline_assetcache");
                 element.Load("bmonline_assetcache");
 
                 //Sound
@@ -174,7 +176,19 @@ namespace BMOnline.Mod.Patches
                 SelHowToPlayItemDataListObject[] newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
                 Array.Copy(howToPlayData.m_PCData.m_MainGameDataArray, newHowToPlayArray, 8);
                 newHowToPlayArray[8] = newHowToPlayArray[4];
+                SelHTPMainGame pageDataListObject = newHowToPlayArray[8].m_PageDataListObject.Cast<SelHTPMainGame>();
+                Il2CppSystem.Collections.Generic.List<SelHowToPlayPageData> ruleExplanationlist = new Il2CppSystem.Collections.Generic.List<SelHowToPlayPageData>();
+                ruleExplanationlist.Add(new SelHowToPlayPageData()
+                {
+                    m_TextReference = new Framework.Text.TextReference() { m_Key = "maingame_howtoplay_onlinerace" },
+                    m_Sprite = "ui/t_sousa_main_online_race.tga"
+                });
+                pageDataListObject.m_Collection.Add((MainGameDef.eGameKind)9, new SelHTPMainGame.ModePageData()
+                {
+                    m_RuleExplanationList = new SelHowToPlayPageDataListObject.PageDataList() { list = ruleExplanationlist }
+                });
                 howToPlayData.m_PCData.m_MainGameDataArray = newHowToPlayArray;
+
                 newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
                 Array.Copy(howToPlayData.m_ConsoleData.m_MainGameDataArray, newHowToPlayArray, 8);
                 newHowToPlayArray[8] = newHowToPlayArray[4];
