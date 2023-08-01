@@ -139,7 +139,7 @@ namespace BMOnline.Mod.Patches
 
                 //Sound
                 Sound.Instance.m_cueSheetParamDict.Add((sound_id.cuesheet)101, new Sound.cuesheet_param_t("bmonline_sound", Path.Combine(AssetBundleItems.DllFolder, "bmonline_sound.acb"), Path.Combine(AssetBundleItems.DllFolder, "bmonline_sound.awb")));
-                Sound.Instance.m_cueParamDict.Add((sound_id.cue)839, new Sound.cue_param_t((sound_id.cuesheet)101, "w01_jungle"));
+                Sound.Instance.m_cueParamDict.Add((sound_id.cue)839, new Sound.cue_param_t((sound_id.cuesheet)101, "mkwii_wifi"));
                 Sound.Instance.LoadCueSheetASync((sound_id.cuesheet)101);
 
                 //Loading spinner
