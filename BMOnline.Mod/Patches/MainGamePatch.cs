@@ -31,13 +31,10 @@ namespace BMOnline.Mod.Patches
 
         static IntPtr Start(IntPtr _thisPtr)
         {
-            //int stageId = GameParam.selectorParam.selectedCourse == MainGameDef.eCourse.Invalid ? GameParam.selectorParam.selectedStageIndex : MgCourseDataManager.currentStageId;
-            //Console.WriteLine($"mode: {GameParam.selectorParam.selectedGameKind:g}    stage: {stageId}");
             if (GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)9)
             {
-                Console.WriteLine("Patching stage to load");
                 GameParam.selectorParam.selectedCourse = MainGameDef.eCourse.Invalid;
-                GameParam.selectorParam.selectedStageIndex = 2231;
+                GameParam.selectorParam.selectedStageIndex = 2201;
                 MgCourseDataManager.SetCurrentCourse(MainGameDef.eCourse.Invalid, 0);
             }
             return StartOriginal(_thisPtr);

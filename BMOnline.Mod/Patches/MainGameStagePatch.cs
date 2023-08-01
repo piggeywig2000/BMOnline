@@ -24,6 +24,18 @@ namespace BMOnline.Mod.Patches
         private static FixedUpdateDelegate FixedUpdateInstance;
         private static FixedUpdateDelegate FixedUpdateOriginal;
 
+        private delegate void UpdateTimeupDelegate(IntPtr _thisPtr);
+        private static UpdateTimeupDelegate UpdateTimeupInstance;
+        private static UpdateTimeupDelegate UpdateTimeupOriginal;
+
+        private delegate void UpdateFallOutDelegate(IntPtr _thisPtr);
+        private static UpdateFallOutDelegate UpdateFallOutInstance;
+        private static UpdateFallOutDelegate UpdateFallOutOriginal;
+
+        private delegate void UpdateGoalSubEffectPlus1Delegate(IntPtr _thisPtr);
+        private static UpdateGoalSubEffectPlus1Delegate UpdateGoalSubEffectPlus1Instance;
+        private static UpdateGoalSubEffectPlus1Delegate UpdateGoalSubEffectPlus1Original;
+
         public static MainGameStage MainGameStage { get; private set; } = null;
         public static event EventHandler OnReset;
 
@@ -48,6 +60,21 @@ namespace BMOnline.Mod.Patches
             FixedUpdateOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
                 typeof(MainGameStage).GetMethod(nameof(MainGameStage.FixedUpdate)))
                 .GetValue(null)).MethodPointer, FixedUpdateInstance);
+
+            UpdateTimeupInstance = UpdateTimeup;
+            UpdateTimeupOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
+                typeof(MainGameStage).GetMethod(nameof(MainGameStage.updateTimeup)))
+                .GetValue(null)).MethodPointer, UpdateTimeupInstance);
+
+            UpdateFallOutInstance = UpdateFallOut;
+            UpdateFallOutOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
+                typeof(MainGameStage).GetMethod(nameof(MainGameStage.updateFallOut)))
+                .GetValue(null)).MethodPointer, UpdateFallOutInstance);
+
+            UpdateGoalSubEffectPlus1Instance = UpdateGoalSubEffectPlus1;
+            UpdateGoalSubEffectPlus1Original = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
+                typeof(MainGameStage).GetMethod(nameof(MainGameStage.updateGoalSub_EFFECT_Plus1)))
+                .GetValue(null)).MethodPointer, UpdateGoalSubEffectPlus1Instance);
         }
 
         static void Initialize(IntPtr _thisPtr, int index, MainGameDef.eGameKind in_gameKind, IntPtr in_mgStageDatum, IntPtr in_mgBgDatum, int playerIndex)
@@ -97,6 +124,41 @@ namespace BMOnline.Mod.Patches
                 mainGameStage.m_StepSec.isActive = false;
                 mainGameStage.m_isPausable = false;
             }
+        }
+
+        static void UpdateTimeup(IntPtr _thisPtr)
+        {
+            MainGameStage mainGameStage = new MainGameStage(_thisPtr);
+            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGameStage.sTimeupWait))
+            {
+                mainGameStage.m_SubState = 3;
+                MainGame.Instance.FadeOut();
+            }
+            UpdateTimeupOriginal(_thisPtr);
+        }
+
+        static void UpdateFallOut(IntPtr _thisPtr)
+        {
+            MainGameStage mainGameStage = new MainGameStage(_thisPtr);
+            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGame.Instance.m_ReplayParam.FalloutPreTime))
+            {
+                mainGameStage.m_SubState = 5;
+                MainGame.Instance.FadeOut();
+            }
+            UpdateFallOutOriginal(_thisPtr);
+        }
+
+        static void UpdateGoalSubEffectPlus1(IntPtr _thisPtr)
+        {
+            MainGameStage mainGameStage = new MainGameStage(_thisPtr);
+            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 4 && mainGameStage.m_StateFrame >= 185f)
+            {
+                mainGameStage.m_SelectedResultButton = MgResultMenu.eTextKind.Retry;
+                mainGameStage.m_IsSkipOpening = true;
+                mainGameStage.m_UpdateGoalSequence.Req(new Action(mainGameStage.updateGoalSub_RECREATE));
+                return;
+            }
+            UpdateGoalSubEffectPlus1Original(_thisPtr);
         }
     }
 }
