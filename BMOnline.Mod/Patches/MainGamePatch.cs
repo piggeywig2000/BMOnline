@@ -34,7 +34,7 @@ namespace BMOnline.Mod.Patches
             if (GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)9)
             {
                 GameParam.selectorParam.selectedCourse = MainGameDef.eCourse.Invalid;
-                GameParam.selectorParam.selectedStageIndex = 2201;
+                GameParam.selectorParam.selectedStageIndex = TestPatch.STAGE_ID;
                 MgCourseDataManager.SetCurrentCourse(MainGameDef.eCourse.Invalid, 0);
             }
             return StartOriginal(_thisPtr);

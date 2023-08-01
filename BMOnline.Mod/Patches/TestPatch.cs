@@ -61,6 +61,8 @@ namespace BMOnline.Mod.Patches
             }
         }
 
+        public static int STAGE_ID = 2201;
+
         private static bool hasInit = false;
         private static SelMainMenuSequence sequence = null;
         private static LoadingSpinnerAnimation loadingSpinner = null;
@@ -88,6 +90,15 @@ namespace BMOnline.Mod.Patches
             if (handle != null && Input.GetKey(KeyCode.G))
             {
                 GameManager.SetPause(false);
+            }
+
+            if (MainGame.mainGameStage != null && Input.GetKeyDown(KeyCode.N))
+            {
+                MainGame.mainGameStage.m_UpdateGoalSequence.Req(null);
+                MainGame.mainGameStage.m_ReadyGoSequenceNormal?.m_Sequence?.Req(null);
+                ChangeLoading(false);
+                STAGE_ID = 2005;
+                AppScene.ChangeReq(AppScene.eID.MainGame, AppScene.FadeOperation.Animator);
             }
         }
 
@@ -218,29 +229,36 @@ namespace BMOnline.Mod.Patches
         }
 
         static Sound.Handle handle = null;
-        static void Test1(IntPtr _thisPtr)
+        private static void ChangeLoading(bool value)
         {
-            if (MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)9 && !Input.GetKey(KeyCode.G))
-            {
-                if (handle == null)
-                {
-                    GameManager.SetPause(true);
-                    GameManager.MainGameBgm.Pause(true);
-                    loadingSpinner.Play();
-                    handle = new Sound.Handle();
-                    handle.Prepare((sound_id.cue)839);
-                    handle.Play();
-                    handle.volume = 2;
-                }
+            if (value == (handle != null))
                 return;
-            }
-            if (handle != null)
+            GameManager.SetPause(value);
+            GameManager.MainGameBgm.Pause(value);
+            if (value)
             {
-                GameManager.MainGameBgm.Pause(false);
+                loadingSpinner.Play();
+                handle = new Sound.Handle();
+                handle.Prepare((sound_id.cue)839);
+                handle.Play();
+                handle.volume = 2;
+            }
+            else if (!value)
+            {
                 loadingSpinner.Pause();
                 handle.Stop();
                 handle = null;
             }
+        }
+
+        static void Test1(IntPtr _thisPtr)
+        {
+            if (MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)9 && !Input.GetKey(KeyCode.G))
+            {
+                ChangeLoading(true);
+                return;
+            }
+            ChangeLoading(false);
             Test1Original(_thisPtr);
         }
 
