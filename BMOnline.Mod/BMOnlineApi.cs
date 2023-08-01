@@ -25,6 +25,8 @@ namespace BMOnline.Mod
         private GameState gameState;
         private ConnectStateManager connectStateManager;
         private PlayerCountManager playerCountManager;
+        private LoadingSpinner loadingSpinner;
+        private RaceManager raceManager;
 
         private bool hasShownWelcomeChat = false;
 
@@ -95,6 +97,8 @@ namespace BMOnline.Mod
             playerManager = new NetPlayerManager(settings, gameState, client);
             notificationManager = new NotificationManager(Settings);
             chatManager = new ChatManager(Settings);
+            loadingSpinner = new LoadingSpinner();
+            raceManager = new RaceManager(loadingSpinner);
 
             foreach (AddonSnapshotType snapshotType in snapshotTypes)
             {
@@ -118,12 +122,11 @@ namespace BMOnline.Mod
 
         public void Update()
         {
-            TestPatch.Update();
-
             if (!IsInitialised)
                 return;
 
             playerManager.Update();
+            raceManager.Update();
         }
 
         public void LateUpdate()

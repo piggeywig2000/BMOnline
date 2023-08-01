@@ -8,6 +8,8 @@ namespace BMOnline.Mod.Patches
 {
     internal static class MainGamePatch
     {
+        public static int RaceStageId { private get; set; } = 0;
+
         private delegate IntPtr StartDelegate(IntPtr _thisPtr);
         private static StartDelegate StartInstance;
         private static StartDelegate StartOriginal;
@@ -34,7 +36,7 @@ namespace BMOnline.Mod.Patches
             if (GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)9)
             {
                 GameParam.selectorParam.selectedCourse = MainGameDef.eCourse.Invalid;
-                GameParam.selectorParam.selectedStageIndex = TestPatch.STAGE_ID;
+                GameParam.selectorParam.selectedStageIndex = RaceStageId;
                 MgCourseDataManager.SetCurrentCourse(MainGameDef.eCourse.Invalid, 0);
             }
             return StartOriginal(_thisPtr);

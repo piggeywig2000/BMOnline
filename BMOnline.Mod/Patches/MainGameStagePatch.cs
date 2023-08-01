@@ -3,11 +3,14 @@ using Flash2;
 using UnhollowerBaseLib;
 using UnhollowerBaseLib.Runtime;
 using UnhollowerRuntimeLib;
+using UnityEngine;
 
 namespace BMOnline.Mod.Patches
 {
     internal static class MainGameStagePatch
     {
+        public static RaceManager RaceManager { private get; set; }
+
         private delegate void InitializeDelegate(IntPtr _thisPtr, int index, MainGameDef.eGameKind in_gameKind, IntPtr in_mgStageDatum, IntPtr in_mgBgDatum, int playerIndex);
         private static InitializeDelegate InitializeInstance;
         private static InitializeDelegate InitializeOriginal;
@@ -23,6 +26,10 @@ namespace BMOnline.Mod.Patches
         private delegate void FixedUpdateDelegate(IntPtr _thisPtr);
         private static FixedUpdateDelegate FixedUpdateInstance;
         private static FixedUpdateDelegate FixedUpdateOriginal;
+
+        private delegate void MdActivatePlayerDelegate(IntPtr _thisPtr);
+        private static MdActivatePlayerDelegate MdActivatePlayerInstance;
+        private static MdActivatePlayerDelegate MdActivatePlayerOriginal;
 
         private delegate void UpdateTimeupDelegate(IntPtr _thisPtr);
         private static UpdateTimeupDelegate UpdateTimeupInstance;
@@ -60,6 +67,11 @@ namespace BMOnline.Mod.Patches
             FixedUpdateOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
                 typeof(MainGameStage).GetMethod(nameof(MainGameStage.FixedUpdate)))
                 .GetValue(null)).MethodPointer, FixedUpdateInstance);
+
+            MdActivatePlayerInstance = MdActivatePlayer;
+            MdActivatePlayerOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
+                typeof(MainGameStage.ReadyGoSequenceNormal).GetMethod(nameof(MainGameStage.ReadyGoSequenceNormal.mdActivatePlayer)))
+                .GetValue(null)).MethodPointer, MdActivatePlayerInstance);
 
             UpdateTimeupInstance = UpdateTimeup;
             UpdateTimeupOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
@@ -124,6 +136,17 @@ namespace BMOnline.Mod.Patches
                 mainGameStage.m_StepSec.isActive = false;
                 mainGameStage.m_isPausable = false;
             }
+        }
+
+        static void MdActivatePlayer(IntPtr _thisPtr)
+        {
+            if (MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)9 && !Input.GetKey(KeyCode.G))
+            {
+                RaceManager.ChangeLoading(true);
+                return;
+            }
+            RaceManager.ChangeLoading(false);
+            MdActivatePlayerOriginal(_thisPtr);
         }
 
         static void UpdateTimeup(IntPtr _thisPtr)

@@ -32,7 +32,7 @@ namespace BMOnline.Mod
                 AssetBundleCachePatch.CreateDetour();
                 MainGamePatch.CreateDetour();
                 GameParamPatch.CreateDetour();
-                TestPatch.CreateDetour();
+                TextManagerPatch.CreateDetour();
 
                 api.Initialise(SteamManager.GetFriendsHandler().GetPersonaName());
             }
