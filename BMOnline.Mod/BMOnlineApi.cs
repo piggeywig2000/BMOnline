@@ -115,15 +115,10 @@ namespace BMOnline.Mod
 
             playerManager.FixedUpdate();
         }
-        int frame = 0;
+
         public void Update()
         {
-            if (++frame >= 60)
-            {
-                if (frame == 60)
-                    TestPatch.Start();
-                TestPatch.Update();
-            }
+            TestPatch.Update();
 
             if (!IsInitialised)
                 return;

@@ -61,24 +61,37 @@ namespace BMOnline.Mod.Patches
             }
         }
 
-        private static bool hasInited = false;
+        private static bool hasInit = false;
         private static SelMainMenuSequence sequence = null;
         private static LoadingSpinnerAnimation loadingSpinner = null;
 
-        public static void Start()
+        public static void Update()
         {
-            SceneManager.sceneLoaded = new Action<Scene, LoadSceneMode>((scene, loadSceneMode) =>
+            if (!hasInit)
             {
-                Console.WriteLine($"Scene loaded: {scene.name}");
-
-                if (!hasInited && scene.name == "MainMenu")
+                SceneManager.sceneLoaded = new Action<Scene, LoadSceneMode>((scene, loadSceneMode) =>
                 {
-                    sequence = UnityEngine.Object.FindObjectOfType<SelMainMenuSequence>();
-                }
-            });
+                    if (scene.name == "MainMenu")
+                    {
+                        sequence = UnityEngine.Object.FindObjectOfType<SelMainMenuSequence>();
+                    }
+                });
+                Initialize();
+                hasInit = true;
+            }
+
+            if (sequence != null && sequence.m_IsCreateWindows)
+            {
+                AddMainMenuItems();
+                sequence = null;
+            }
+            if (handle != null && Input.GetKey(KeyCode.G))
+            {
+                GameManager.SetPause(false);
+            }
         }
 
-        private static unsafe void Initialize()
+        private static void Initialize()
         {
             try
             {
@@ -112,16 +125,6 @@ namespace BMOnline.Mod.Patches
 
                 SelPauseWindow.s_MgMenuKindCollection.Add((SelectorDef.MainGameKind)8, SelectorDef.MainMenuKind.MgModeSelect);
 
-                SelHowToPlayData howToPlayData = sequence.GetData<SelHowToPlayData>(SelMainMenuSequence.Data.HowToPlay);
-                SelHowToPlayItemDataListObject[] newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
-                Array.Copy(howToPlayData.m_PCData.m_MainGameDataArray, newHowToPlayArray, 8);
-                newHowToPlayArray[8] = newHowToPlayArray[4];
-                howToPlayData.m_PCData.m_MainGameDataArray = newHowToPlayArray;
-                newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
-                Array.Copy(howToPlayData.m_ConsoleData.m_MainGameDataArray, newHowToPlayArray, 8);
-                newHowToPlayArray[8] = newHowToPlayArray[4];
-                howToPlayData.m_ConsoleData.m_MainGameDataArray = newHowToPlayArray;
-
                 TextData textData = new TextData();
                 textData.textDictionary.Add("maingame_onlineracemode", new TextData.Context() { text = "Online Race Mode" });
                 textData.textDictionary.Add("tips_main_onlinerace01", new TextData.Context() { text = "Press <sprite name=\"MainGame_QuickRetry\"> in Online Race Mode to retry the stage right away!", isUseTag = true });
@@ -131,18 +134,6 @@ namespace BMOnline.Mod.Patches
                 AssetBundleCache.Instance.m_assetBundleNameToEntityDict.Add("bmonline_assetcache", element);
                 AssetBundleCache.Instance.m_pathToAssetBundleNameDict.Add("ui/t_tmb_mode_online_race.tga", "bmonline_assetcache");
                 element.Load("bmonline_assetcache");
-
-                SelMgModeItemDataListObject dataList = sequence.GetMainMenuWindow(SelectorDef.MainMenuKind.MgModeSelect).Cast<Flash2.Selector.MainGame.SelMgModeSelectWindow>().m_MgModeData;
-                SelMgModeItemData itemData = new SelMgModeItemData();
-                itemData.transitionMenuKind = SelectorDef.MainMenuKind.HowToPlay;
-                itemData.mainGamemode = (SelectorDef.MainGameKind)8;
-                itemData.mainGameKind = (MainGameDef.eGameKind)9;
-                itemData.textKey = "maingame_onlineracemode";
-                itemData.descriptionTextKey = "";
-                itemData.isHideText = true;
-                itemData.supplementaryTextKey = "";
-                itemData.m_ThumbnailSpritePath = new SubAssetSpritePath() { m_Identifier = "ui/t_tmb_mode_online_race.tga:t_tmb_mode_online_race" };
-                dataList.m_ItemDataList.Add(itemData);
 
                 //Sound
                 Sound.Instance.m_cueSheetParamDict.Add((sound_id.cuesheet)101, new Sound.cuesheet_param_t("bmonline_sound", Path.Combine(AssetBundleItems.DllFolder, "bmonline_sound.acb"), Path.Combine(AssetBundleItems.DllFolder, "bmonline_sound.awb")));
@@ -159,16 +150,35 @@ namespace BMOnline.Mod.Patches
                 Console.WriteLine($"Failed: {e}");
             }
         }
-        public static void Update()
+
+        private static void AddMainMenuItems()
         {
-            if (!hasInited && sequence != null && sequence.m_IsCreateWindows)
+            SelMgModeItemDataListObject dataList = sequence.GetData<SelMgModeItemDataListObject>(SelMainMenuSequence.Data.MgModeSelect);
+            if (dataList.m_ItemDataList.Count <= 6)
             {
-                Initialize();
-                hasInited = true;
+                SelMgModeItemData itemData = new SelMgModeItemData();
+                itemData.transitionMenuKind = SelectorDef.MainMenuKind.HowToPlay;
+                itemData.mainGamemode = (SelectorDef.MainGameKind)8;
+                itemData.mainGameKind = (MainGameDef.eGameKind)9;
+                itemData.textKey = "maingame_onlineracemode";
+                itemData.descriptionTextKey = "";
+                itemData.isHideText = true;
+                itemData.supplementaryTextKey = "";
+                itemData.m_ThumbnailSpritePath = new SubAssetSpritePath() { m_Identifier = "ui/t_tmb_mode_online_race.tga:t_tmb_mode_online_race" };
+                dataList.m_ItemDataList.Add(itemData);
             }
-            if (handle != null && Input.GetKey(KeyCode.G))
+
+            SelHowToPlayData howToPlayData = sequence.GetData<SelHowToPlayData>(SelMainMenuSequence.Data.HowToPlay);
+            if (howToPlayData.m_PCData.m_MainGameDataArray.Length <= 8)
             {
-                GameManager.SetPause(false);
+                SelHowToPlayItemDataListObject[] newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
+                Array.Copy(howToPlayData.m_PCData.m_MainGameDataArray, newHowToPlayArray, 8);
+                newHowToPlayArray[8] = newHowToPlayArray[4];
+                howToPlayData.m_PCData.m_MainGameDataArray = newHowToPlayArray;
+                newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
+                Array.Copy(howToPlayData.m_ConsoleData.m_MainGameDataArray, newHowToPlayArray, 8);
+                newHowToPlayArray[8] = newHowToPlayArray[4];
+                howToPlayData.m_ConsoleData.m_MainGameDataArray = newHowToPlayArray;
             }
         }
 
