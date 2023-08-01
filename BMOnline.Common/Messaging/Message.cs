@@ -60,7 +60,8 @@ namespace BMOnline.Common.Messaging
         protected abstract void DecodeMessage(byte[] data);
         protected abstract byte[] EncodeMessage();
 
-        public byte[] Encode()
+        public byte[] Encode() => Encode(BidirectionalUdp.PROTOCOL_VERSION);
+        public byte[] Encode(byte protocolVersion)
         {
             byte[] messageData = EncodeMessage();
             byte[] output;
@@ -70,7 +71,7 @@ namespace BMOnline.Common.Messaging
             else if (this is RelaySnapshotSendMessage) type = MessageType.RelaySnapshotSend;
             else if (this is RelayRequestGetMessage) type = MessageType.RelayRequestGet;
             else if (this is RelayRequestUpdateMessage) type = MessageType.RelayRequestUpdate;
-            else if (this is LoginRefuseMessage) type = MessageType.LoginRefuse;
+            else if (this is LoginRefuseMessage) type = protocolVersion >= 4 ? MessageType.LoginRefuse : (MessageType)4;
             else if (this is GlobalInfoMessage) type = MessageType.GlobalInfo;
             else if (this is RelaySnapshotReceiveMessage) type = MessageType.RelaySnapshotReceive;
             else if (this is RelayRequestPlayersMessage) type = MessageType.RelayRequestPlayers;

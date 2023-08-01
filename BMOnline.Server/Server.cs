@@ -12,7 +12,7 @@ namespace BMOnline.Server
         private readonly UserManager userManager;
         private readonly string? password;
         private readonly ushort maxChatLength;
-        private readonly List<(IPEndPoint, uint, LoginRefuseReason)> loginRefusals;
+        private readonly List<(IPEndPoint endPoint, uint secret, LoginRefuseReason reason, byte clientProtocolVersion)> loginRefusals;
         private readonly OutgoingChatBuffer outgoingChats;
 
         public Server(IPEndPoint localEP, string? password, ushort maxChatLength) : base(localEP)
@@ -20,7 +20,7 @@ namespace BMOnline.Server
             userManager = new UserManager();
             this.password = password;
             this.maxChatLength = maxChatLength;
-            loginRefusals = new List<(IPEndPoint, uint, LoginRefuseReason)>();
+            loginRefusals = new List<(IPEndPoint, uint, LoginRefuseReason, byte)>();
             outgoingChats = new OutgoingChatBuffer();
         }
 
@@ -62,14 +62,14 @@ namespace BMOnline.Server
             //Incorrect protocol version, probably on an old version
             if (message.ProtocolVersion != PROTOCOL_VERSION)
             {
-                loginRefusals.Add((remoteEndPoint, message.Secret, LoginRefuseReason.ProtocolVersion));
+                loginRefusals.Add((remoteEndPoint, message.Secret, LoginRefuseReason.ProtocolVersion, message.ProtocolVersion));
                 return;
             }
 
             //Check password
             if (!string.IsNullOrEmpty(password) && message.Password != password)
             {
-                loginRefusals.Add((remoteEndPoint, message.Secret, LoginRefuseReason.Password));
+                loginRefusals.Add((remoteEndPoint, message.Secret, LoginRefuseReason.Password, message.ProtocolVersion));
                 return;
             }
 
@@ -79,7 +79,7 @@ namespace BMOnline.Server
             //Name cannot be longer than 32 characters and must be longer than 0 characters
             if (message.Name.Length > 32 || message.Name.Length == 0)
             {
-                loginRefusals.Add((remoteEndPoint, message.Secret, LoginRefuseReason.BadName));
+                loginRefusals.Add((remoteEndPoint, message.Secret, LoginRefuseReason.BadName, message.ProtocolVersion));
                 return;
             }
 
@@ -179,13 +179,13 @@ namespace BMOnline.Server
                 Log.Info($"{expiredUser.Name} (ID {expiredUser.Id}) disconnected");
             }
 
-            foreach ((IPEndPoint endPoint, uint secret, LoginRefuseReason reason) in loginRefusals)
+            foreach ((IPEndPoint endPoint, uint secret, LoginRefuseReason reason, byte clientProtcolVersion) in loginRefusals)
             {
                 byte[] lrmBytes = new LoginRefuseMessage()
                 {
                     Secret = secret,
                     Reason = reason
-                }.Encode();
+                }.Encode(clientProtcolVersion);
                 await SendAsync(lrmBytes, endPoint);
             }
             loginRefusals.Clear();

@@ -15,23 +15,27 @@ namespace BMOnline.Common.Messaging
         protected override void DecodeMessage(byte[] data)
         {
             ProtocolVersion = data[0];
-            Secret = BitConverter.ToUInt32(data, 1);
-            byte nameLength = data[5];
-            Name = Encoding.UTF8.GetString(data, 6, nameLength);
-            byte passwordLength = data[6 + nameLength];
-            Password = Encoding.UTF8.GetString(data, 7 + nameLength, passwordLength);
-            ushort snapshotIdLength = BitConverter.ToUInt16(data, 7 + nameLength + passwordLength);
-            SnapshotIds = new ushort[snapshotIdLength];
-            for (int i = 0; i < SnapshotIds.Length; i++)
+            try
             {
-                SnapshotIds[i] = BitConverter.ToUInt16(data, (i * 2) + 9 + nameLength + passwordLength);
+                Secret = BitConverter.ToUInt32(data, 1);
+                byte nameLength = data[5];
+                Name = Encoding.UTF8.GetString(data, 6, nameLength);
+                byte passwordLength = data[6 + nameLength];
+                Password = Encoding.UTF8.GetString(data, 7 + nameLength, passwordLength);
+                ushort snapshotIdLength = BitConverter.ToUInt16(data, 7 + nameLength + passwordLength);
+                SnapshotIds = new ushort[snapshotIdLength];
+                for (int i = 0; i < SnapshotIds.Length; i++)
+                {
+                    SnapshotIds[i] = BitConverter.ToUInt16(data, (i * 2) + 9 + nameLength + passwordLength);
+                }
+                ushort requestIdLength = BitConverter.ToUInt16(data, 9 + nameLength + passwordLength + (snapshotIdLength * 2));
+                RequestIds = new ushort[requestIdLength];
+                for (int i = 0; i < RequestIds.Length; i++)
+                {
+                    RequestIds[i] = BitConverter.ToUInt16(data, (i * 2) + 11 + nameLength + passwordLength + (snapshotIdLength * 2));
+                }
             }
-            ushort requestIdLength = BitConverter.ToUInt16(data, 9 + nameLength + passwordLength + (snapshotIdLength * 2));
-            RequestIds = new ushort[requestIdLength];
-            for (int i = 0; i < RequestIds.Length; i++)
-            {
-                RequestIds[i] = BitConverter.ToUInt16(data, (i * 2) + 11 + nameLength + passwordLength + (snapshotIdLength * 2));
-            }
+            catch { }
         }
 
         protected override byte[] EncodeMessage()
