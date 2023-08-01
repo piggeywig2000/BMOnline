@@ -20,7 +20,6 @@ namespace BMOnline.Mod.Patches
             SetStateOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
                 typeof(PlayerMotion).GetMethod(nameof(PlayerMotion.SetState)))
                 .GetValue(null)).MethodPointer, SetStateInstance);
-
         }
 
         static void SetState(IntPtr _thisPtr, PlayerMotion.State state)

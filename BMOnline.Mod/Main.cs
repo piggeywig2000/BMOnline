@@ -29,6 +29,10 @@ namespace BMOnline.Mod
                 MainGameStagePatch.CreateDetour();
                 PlayerMotionPatch.CreateDetour();
                 AppInputPatch.CreateDetour();
+                AssetBundleCachePatch.CreateDetour();
+                MainGamePatch.CreateDetour();
+                GameParamPatch.CreateDetour();
+                TestPatch.CreateDetour();
 
                 api.Initialise(SteamManager.GetFriendsHandler().GetPersonaName());
             }

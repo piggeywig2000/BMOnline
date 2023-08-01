@@ -6,7 +6,7 @@ using UnhollowerRuntimeLib;
 
 namespace BMOnline.Mod.Patches
 {
-    internal class AppInputPatch
+    internal static class AppInputPatch
     {
         public static bool PreventKeyboardUpdate { get; set; } = false;
 
@@ -20,7 +20,6 @@ namespace BMOnline.Mod.Patches
             KeyboardParamUpdateOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
                 typeof(AppInput).GetMethod(nameof(AppInput.keyboard_param_update)))
                 .GetValue(null)).MethodPointer, KeyboardParamUpdateInstance);
-
         }
 
         static void KeyboardParamUpdate(IntPtr _thisPtr, IntPtr isAnyKey, IntPtr isAnyKeyDown, IntPtr isAnyKeyUp)

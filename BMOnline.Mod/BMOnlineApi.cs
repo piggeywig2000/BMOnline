@@ -10,6 +10,7 @@ using BMOnline.Common;
 using BMOnline.Mod.Addon;
 using BMOnline.Mod.Chat;
 using BMOnline.Mod.Notifications;
+using BMOnline.Mod.Patches;
 using BMOnline.Mod.PlayerCount;
 using BMOnline.Mod.Players;
 using BMOnline.Mod.Settings;
@@ -114,9 +115,16 @@ namespace BMOnline.Mod
 
             playerManager.FixedUpdate();
         }
-
+        int frame = 0;
         public void Update()
         {
+            if (++frame >= 60)
+            {
+                if (frame == 60)
+                    TestPatch.Start();
+                TestPatch.Update();
+            }
+
             if (!IsInitialised)
                 return;
 

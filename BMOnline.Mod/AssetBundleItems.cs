@@ -7,7 +7,7 @@ namespace BMOnline.Mod
     internal static class AssetBundleItems
     {
         private static string dllFolder;
-        private static string DllFolder
+        public static string DllFolder
         {
             get
             {
@@ -107,6 +107,19 @@ namespace BMOnline.Mod
                     chatMessagePrefab = BmOnlineAb.LoadAsset<GameObject>("Assets/Prefabs/ChatMessage.prefab");
                 }
                 return chatMessagePrefab;
+            }
+        }
+
+        private static GameObject loadingPrefab;
+        public static GameObject LoadingPrefab
+        {
+            get
+            {
+                if (loadingPrefab == null)
+                {
+                    loadingPrefab = BmOnlineAb.LoadAsset<GameObject>("Assets/Prefabs/Loading.prefab");
+                }
+                return loadingPrefab;
             }
         }
     }
