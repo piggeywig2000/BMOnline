@@ -19,7 +19,7 @@ namespace BMOnline.Server
         private readonly RaceGamemode raceGamemode;
         private readonly RaceGamemode timeAttackGamemode;
 
-        public Server(IPEndPoint localEP, string? password, ushort maxChatLength) : base(localEP)
+        public Server(IPEndPoint localEP, string? password, ushort maxChatLength, float raceTimeLimitMultiplier) : base(localEP)
         {
             userManager = new UserManager();
             this.password = password;
@@ -27,8 +27,8 @@ namespace BMOnline.Server
             loginRefusals = new List<(IPEndPoint, uint, LoginRefuseReason, byte)>();
             outgoingChats = new OutgoingChatBuffer();
 
-            raceGamemode = new RaceGamemode(userManager, false);
-            timeAttackGamemode = new RaceGamemode(userManager, true);
+            raceGamemode = new RaceGamemode(userManager, false, raceTimeLimitMultiplier);
+            timeAttackGamemode = new RaceGamemode(userManager, true, raceTimeLimitMultiplier);
         }
 
         protected override Task HandleReceive(TimedUdpReceive result)

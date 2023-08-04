@@ -28,16 +28,17 @@ namespace BMOnline.Server.Gamemodes
     internal class RaceGamemode : IGamemodeBase
     {
         private static readonly Random random = new Random();
-        private const float TIME_LIMIT_MULTIPLIER = 5;
 
         private readonly Dictionary<ushort, RacePlayer> players;
+        private readonly float timeLimitMultiplier = 5;
 
         private TimeSpan stateTime;
         private float timeLimit;
 
-        public RaceGamemode(UserManager userManager, bool isTimeAttack)
+        public RaceGamemode(UserManager userManager, bool isTimeAttack, float timeLimitMultiplier)
         {
             players = new Dictionary<ushort, RacePlayer>();
+            this.timeLimitMultiplier = timeLimitMultiplier;
             IsTimeAttack = isTimeAttack;
 
             Reset();
@@ -65,7 +66,13 @@ namespace BMOnline.Server.Gamemodes
         public bool UserInGamemode(ushort user) => players.ContainsKey(user);
 
         public float GetTimeRemaining(TimeSpan currentTime)
-            => State != RaceState.Playing ? 0 : (float)Math.Max(0, timeLimit - (currentTime - stateTime).TotalSeconds);
+        {
+            if (State == RaceState.Playing)
+                return (float)Math.Max(0, timeLimit - (currentTime - stateTime).TotalSeconds);
+            else if (State == RaceState.WaitingForLoad)
+                return timeLimit;
+            return 0;
+        }
 
         private void Reset()
         {
@@ -88,16 +95,16 @@ namespace BMOnline.Server.Gamemodes
             while (nextStageId == previousStageId)
                 nextStageId = Definitions.RaceStages[random.Next(Definitions.RaceStages.Count)];
             CurrentStageId = nextStageId;
+
+            if (!Definitions.TimeLimits.TryGetValue(CurrentStageId, out int stageTimeLimit))
+                stageTimeLimit = 60;
+            timeLimit = stageTimeLimit * timeLimitMultiplier;
         }
 
         private void StartStage(TimeSpan currentTime)
         {
             stateTime = currentTime;
             State = RaceState.Playing;
-
-            if (!Definitions.TimeLimits.TryGetValue(CurrentStageId, out int stageTimeLimit))
-                stageTimeLimit = 60;
-            timeLimit = stageTimeLimit * TIME_LIMIT_MULTIPLIER;
         }
 
         private void FinishStage(TimeSpan currentTime)

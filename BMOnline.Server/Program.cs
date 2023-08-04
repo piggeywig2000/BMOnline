@@ -15,9 +15,11 @@ namespace BMOnline.Server
             Option<string?> passwordOption = new Option<string?>("--password", description: "The server password. Omit this option to allow clients to connect to the server without a password.");
             Option<ushort> maxChatLengthOption = new Option<ushort>("--max-chat-length", () => 280, "The maximum number of characters allowed in a single chat message. Set this to 0 to disable chat.");
             maxChatLengthOption.ArgumentHelpName = "length";
+            Option<float> raceTimeLimitMultiplierOption = new Option<float>("--race-time-multiplier", () => 5, "The time limit multiplier for the online race and time attack modes. The time limit for a given stage is the stage's time limit multiplied by this value.");
+            raceTimeLimitMultiplierOption.ArgumentHelpName = "multiplier";
 
-            RootCommand rootCommand = new RootCommand() { portOption, passwordOption, maxChatLengthOption };
-            rootCommand.SetHandler(RunServer, portOption, passwordOption, maxChatLengthOption);
+            RootCommand rootCommand = new RootCommand() { portOption, passwordOption, maxChatLengthOption, raceTimeLimitMultiplierOption };
+            rootCommand.SetHandler(RunServer, portOption, passwordOption, maxChatLengthOption, raceTimeLimitMultiplierOption);
 
             Parser parser = new CommandLineBuilder(rootCommand)
                 .UseDefaults()
@@ -31,7 +33,7 @@ namespace BMOnline.Server
 
         }
 
-        private static async Task RunServer(ushort port, string? password, ushort maxChatLength)
+        private static async Task RunServer(ushort port, string? password, ushort maxChatLength, float raceTimeLimitMultiplier)
         {
             if (string.IsNullOrWhiteSpace(password))
                 password = null;
@@ -44,7 +46,8 @@ namespace BMOnline.Server
             Log.Config($"Port: {port}");
             Log.Config(password != null ? $"Password: {password}" : "No password");
             Log.Config(maxChatLength > 0 ? $"Maximum chat message length: {maxChatLength}" : "Chat messages are disabled");
-            Server server = new Server(new IPEndPoint(IPAddress.Any, port), password, maxChatLength);
+            Log.Config($"Race time limit multiplier: {raceTimeLimitMultiplier}");
+            Server server = new Server(new IPEndPoint(IPAddress.Any, port), password, maxChatLength, raceTimeLimitMultiplier);
             await server.RunBusy();
         }
     }
