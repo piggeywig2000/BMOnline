@@ -40,6 +40,9 @@ namespace BMOnline.Common.Messaging
                 case MessageType.RelayRequestResponse:
                     returnMessage = new RelayRequestResponseMessage();
                     break;
+                case MessageType.RaceStateUpdate:
+                    returnMessage = new RaceStateUpdateMessage();
+                    break;
                 case MessageType.Chat:
                     returnMessage = new ChatMessage();
                     break;
@@ -76,6 +79,7 @@ namespace BMOnline.Common.Messaging
             else if (this is RelaySnapshotReceiveMessage) type = MessageType.RelaySnapshotReceive;
             else if (this is RelayRequestPlayersMessage) type = MessageType.RelayRequestPlayers;
             else if (this is RelayRequestResponseMessage) type = MessageType.RelayRequestResponse;
+            else if (this is RaceStateUpdateMessage) type = MessageType.RaceStateUpdate;
             else if (this is ChatMessage) type = MessageType.Chat;
             else throw new InvalidOperationException("Message type to encode is not supported");
 
@@ -102,6 +106,7 @@ namespace BMOnline.Common.Messaging
             RelaySnapshotReceive,
             RelayRequestPlayers,
             RelayRequestResponse,
+            RaceStateUpdate,
             Chat,
             Unknown = byte.MaxValue
         }

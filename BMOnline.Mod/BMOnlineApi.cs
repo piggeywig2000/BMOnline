@@ -98,7 +98,7 @@ namespace BMOnline.Mod
             notificationManager = new NotificationManager(Settings);
             chatManager = new ChatManager(Settings);
             loadingSpinner = new LoadingSpinner();
-            raceManager = new RaceManager(loadingSpinner);
+            raceManager = new RaceManager(loadingSpinner, gameState, client);
 
             foreach (AddonSnapshotType snapshotType in snapshotTypes)
             {
@@ -206,6 +206,8 @@ namespace BMOnline.Mod
                         string incomingMessage = client.State.IncomingChats.GetReceivedChat();
                         chatManager.AddChatMessage(incomingMessage);
                     }
+
+                    raceManager.LateUpdateFromState();
 
                     DoStateUpdate?.Invoke(this, EventArgs.Empty);
                 }

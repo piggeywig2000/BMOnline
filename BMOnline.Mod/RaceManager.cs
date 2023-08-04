@@ -1,48 +1,39 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using BMOnline.Client;
+using BMOnline.Common.Relay.Snapshots;
+using BMOnline.Common.Gamemodes;
+using BMOnline.Common.Messaging;
+using BMOnline.Mod.Patches;
 using Flash2;
-using UnityEngine.SceneManagement;
-using UnityEngine;
 using Framework;
 using UnhollowerBaseLib;
 using UnhollowerRuntimeLib;
-using System.IO;
-using BMOnline.Mod.Patches;
+using UnityEngine.SceneManagement;
 
 namespace BMOnline.Mod
 {
     internal class RaceManager
     {
         private readonly LoadingSpinner loadingSpinner;
+        private readonly GameState gameState;
+        private readonly OnlineClient client;
+
         private SelMainMenuSequence sequence = null;
         private Sound.Handle handle = null;
+        private RaceStateSnapshot lastState;
+        private RaceStateUpdateMessage lastUpdate;
+        private ushort currentStage;
 
-        public void ChangeLoading(bool value)
-        {
-            if (value == (handle != null))
-                return;
-            GameManager.SetPause(value);
-            GameManager.MainGameBgm.Pause(value);
-            loadingSpinner.SetPlaying(value);
-            if (value)
-            {
-                handle = new Sound.Handle();
-                handle.Prepare((sound_id.cue)839);
-                handle.Play();
-                handle.volume = 2;
-            }
-            else if (!value)
-            {
-                handle.Stop();
-                handle = null;
-            }
-        }
-
-        public RaceManager(LoadingSpinner loadingSpinner)
+        public RaceManager(LoadingSpinner loadingSpinner, GameState gameState, OnlineClient client)
         {
             this.loadingSpinner = loadingSpinner;
+            this.gameState = gameState;
+            this.client = client;
             MainGameStagePatch.RaceManager = this;
-            MainGamePatch.RaceStageId = 2201;
+
+            Reset();
 
             SceneManager.sceneLoaded = new Action<Scene, LoadSceneMode>((scene, loadSceneMode) =>
             {
@@ -100,6 +91,29 @@ namespace BMOnline.Mod
             Sound.Instance.LoadCueSheetASync((sound_id.cuesheet)101);
         }
 
+        public float TimeRemaining { get; private set; }
+
+        public void ChangeLoading(bool value)
+        {
+            if (value == (handle != null))
+                return;
+            GameManager.SetPause(value);
+            GameManager.MainGameBgm.Pause(value);
+            loadingSpinner.SetPlaying(value);
+            if (value)
+            {
+                handle = new Sound.Handle();
+                handle.Prepare((sound_id.cue)839);
+                handle.Play();
+                handle.volume = 2;
+            }
+            else if (!value)
+            {
+                handle.Stop();
+                handle = null;
+            }
+        }
+
         private void AddMainMenuItems()
         {
             SelMgModeItemDataListObject dataList = sequence.GetData<SelMgModeItemDataListObject>(SelMainMenuSequence.Data.MgModeSelect);
@@ -150,19 +164,123 @@ namespace BMOnline.Mod
                 AddMainMenuItems();
                 sequence = null;
             }
-            if (handle != null && Input.GetKey(KeyCode.G))
+        }
+
+        public float GetFinishTime()
+        {
+            if (gameState.MainGameStage == null)
+                return 0f;
+            if (gameState.MainGameStage.m_GoalTime == 0)
+                return 0f;
+            return Flash2.Util.FrameToSec(gameState.MainGameStage.m_MaxGameTime - gameState.MainGameStage.m_GoalTime);
+        }
+
+        public RaceStateUpdateMessage GetUpdateToSend() => new RaceStateUpdateMessage()
+        {
+            Stage = currentStage,
+            IsLoaded = MainGameStagePatch.DidBlockLoadThisFrame ||
+                (gameState.MainGameStage != null && gameState.MainGameStage.state == MainGameStage.State.IDLE && gameState.MainGameStage.state != MainGameStage.State.PREPARE),
+            FinishTime = GetFinishTime()
+        };
+
+        private void Reset()
+        {
+            lastState = null;
+            lastUpdate = null;
+            currentStage = 0;
+            TimeRemaining = 0;
+        }
+
+        public void LateUpdateFromState()
+        {
+            if ((byte)MainGame.gameKind != (byte)OnlineGamemode.RaceMode && (byte)MainGame.gameKind != (byte)OnlineGamemode.TimeAttackMode)
             {
-                GameManager.SetPause(false);
+                if (client.State.GetRaceStateType().GetLatestSnapshot(0) != null)
+                {
+                    Reset();
+                    client.State.GetRaceStateType().ClearPlayerSnapshots(0);
+                    client.State.SetRaceState(null);
+                }
+                return;
             }
 
-            if (MainGame.mainGameStage != null && Input.GetKeyDown(KeyCode.N))
+            RaceStateSnapshot raceStateSnapshot = (RaceStateSnapshot)client.State.GetRaceStateType().GetCurrentSnapshot(0, client.Time);
+            if (raceStateSnapshot == null)
+                return;
+
+            TimeRemaining = raceStateSnapshot.TimeRemaining;
+
+            if ((lastState == null && raceStateSnapshot.Stage != 0) || raceStateSnapshot.Stage != lastState.Stage)
             {
-                MainGame.mainGameStage.m_UpdateGoalSequence.Req(null);
-                MainGame.mainGameStage.m_ReadyGoSequenceNormal?.m_Sequence?.Req(null);
-                ChangeLoading(false);
-                MainGamePatch.RaceStageId = 2005;
-                AppScene.ChangeReq(AppScene.eID.MainGame, AppScene.FadeOperation.Animator);
+                MainGamePatch.RaceStageId = raceStateSnapshot.Stage;
+                currentStage = raceStateSnapshot.Stage;
+                if (lastState != null)
+                {
+                    ChangeLoading(false);
+                    MainGame.mainGameStage.m_SelectedResultButton = MgResultMenu.eTextKind.Next;
+                    MainGame.mainGameStage.m_State = MainGameStage.State.GOAL;
+                    MainGame.mainGameStage.m_SubState = 4;
+                    MainGame.mainGameStage.m_SubStateTimer = 0;
+                    MainGame.mainGameStage.m_UpdateGoalSequence.Req(new Action(MainGame.mainGameStage.updateGoalSub_RECREATE));
+                }
             }
+
+            if (lastState == null || raceStateSnapshot.State != lastState.State)
+            {
+                MainGameStagePatch.ShouldPreventLoad = raceStateSnapshot.State == RaceState.WaitingForLoad;
+
+                if (raceStateSnapshot.State != RaceState.WaitingForLoad && MainGameStagePatch.DidBlockLoadThisFrame)
+                {
+                    GameManager.SetPause(false);
+                }
+            }
+
+            if (raceStateSnapshot.State == RaceState.Finished && gameState.MainGameStage != null && gameState.MainGameStage.state == MainGameStage.State.GAME)
+            {
+                gameState.MainGameStage.m_State = MainGameStage.State.TIMEUP;
+                gameState.MainGameStage.m_SubState = 0;
+                gameState.MainGameStage.m_StateFrame = 0;
+                gameState.MainGameStage.m_StateTimer = 0;
+                gameState.MainGameStage.m_SubStateTimer = 0;
+            }
+            MainGameStagePatch.ShouldPreventFinish = raceStateSnapshot.State == RaceState.Finished;
+
+            if (MainGameStagePatch.DidBlockLoadThisFrame && (lastUpdate == null || lastUpdate.Stage != currentStage || !lastUpdate.IsLoaded))
+            {
+                RaceStateUpdateMessage updateToSend = GetUpdateToSend();
+                client.State.SetRaceState(updateToSend);
+                lastUpdate = updateToSend;
+            }
+
+            if (gameState.MainGameStage != null && gameState.MainGameStage.m_GoalTime > 0 && (lastUpdate == null || lastUpdate.FinishTime != GetFinishTime()))
+            {
+                RaceStateUpdateMessage updateToSend = GetUpdateToSend();
+                client.State.SetRaceState(updateToSend);
+                lastUpdate = updateToSend;
+            }
+
+            if (SaveData.userParam.optionParam.IsEnableJump())
+                SaveData.userParam.optionParam.SetEnableJump(false);
+
+            if (raceStateSnapshot.State != RaceState.Playing)
+            {
+                if (Pause.isEnable)
+                {
+                    Pause.Disable(false);
+                }
+
+                if (MainGame.isViewStage)
+                {
+                    MainGame.Instance.m_viewStageCamera.m_updateMode.ReqExec(new Action(MainGame.Instance.m_viewStageCamera.mdEnd));
+                }
+
+                if (MainGame.isViewPlayer)
+                {
+                    MainGame.Instance.m_photoModeCamera.m_updateMode.ReqExec(new Action(MainGame.Instance.m_photoModeCamera.mdEnd));
+                }
+            }
+
+            lastState = raceStateSnapshot;
         }
     }
 }

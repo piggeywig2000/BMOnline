@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using BMOnline.Client.Relay.Requests;
 using BMOnline.Client.Relay.Snapshots;
 using BMOnline.Common;
+using BMOnline.Common.Gamemodes;
 using BMOnline.Common.Messaging;
 using BMOnline.Common.Relay;
+using BMOnline.Common.Relay.Requests;
 using BMOnline.Common.Relay.Snapshots;
 
 namespace BMOnline.Client
@@ -131,6 +133,27 @@ namespace BMOnline.Client
 
             await StateSemaphore.WaitAsync();
             State.GetRelaySnapshotType(message.RelayId)?.AddSnapshot(message, timeReceived);
+            //Stop sending race updates if the state has changed such that we no longer need to send it
+            if (message.RelayId == 1 && State.RaceStateToSend != null)
+            {
+                RaceStateSnapshot raceState = (RaceStateSnapshot)State.GetRaceStateType().GetLatestSnapshot(0);
+                //If we're telling the server that we're loaded but the race has already started
+                if (State.RaceStateToSend.IsLoaded && State.RaceStateToSend.FinishTime == 0 && (raceState.State == RaceState.Playing || raceState.State == RaceState.Finished))
+                {
+                    State.RaceStateToSend = null;
+                }
+                //If we're telling the server that we've finished but the race is no longer playing
+                else if (State.RaceStateToSend.FinishTime > 0 && raceState.State != RaceState.Playing)
+                {
+                    State.RaceStateToSend = null;
+                }
+                //If we're no longer playing
+                PlayerInfoRequest playerInfo = (PlayerInfoRequest)State.GetPlayerInfoType().DataToSend;
+                if (playerInfo != null && playerInfo.Mode != (byte)OnlineGamemode.RaceMode && playerInfo.Mode != (byte)OnlineGamemode.TimeAttackMode)
+                {
+                    State.RaceStateToSend = null;
+                }
+            }
             StateSemaphore.Release();
         }
 
@@ -220,6 +243,13 @@ namespace BMOnline.Client
                     RequestedChatIndex = State.IncomingChats?.IndexToRequest ?? 0
                 }.Encode();
                 await SendAsync(statusBytes, serverEndpoint);
+                //Send race state update message
+                if (State.RaceStateToSend != null)
+                {
+                    State.RaceStateToSend.Secret = secret;
+                    byte[] raceStateBytes = State.RaceStateToSend.Encode();
+                    await SendAsync(raceStateBytes, serverEndpoint);
+                }
                 //Send a chat message
                 string outgoingChat = State.OutgoingChats?.GetChatAtIndex(State.OutgoingChats.RequestedIndex);
                 if (outgoingChat != null)

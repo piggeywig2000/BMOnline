@@ -4,6 +4,7 @@ using BMOnline.Common.Chat;
 using BMOnline.Common.Messaging;
 using BMOnline.Common.Relay.Requests;
 using BMOnline.Common.Relay.Snapshots;
+using BMOnline.Server.Gamemodes;
 
 namespace BMOnline.Server
 {
@@ -15,6 +16,9 @@ namespace BMOnline.Server
         private readonly List<(IPEndPoint endPoint, uint secret, LoginRefuseReason reason, byte clientProtocolVersion)> loginRefusals;
         private readonly OutgoingChatBuffer outgoingChats;
 
+        private readonly RaceGamemode raceGamemode;
+        private readonly RaceGamemode timeAttackGamemode;
+
         public Server(IPEndPoint localEP, string? password, ushort maxChatLength) : base(localEP)
         {
             userManager = new UserManager();
@@ -22,6 +26,9 @@ namespace BMOnline.Server
             this.maxChatLength = maxChatLength;
             loginRefusals = new List<(IPEndPoint, uint, LoginRefuseReason, byte)>();
             outgoingChats = new OutgoingChatBuffer();
+
+            raceGamemode = new RaceGamemode(userManager, false);
+            timeAttackGamemode = new RaceGamemode(userManager, true);
         }
 
         protected override Task HandleReceive(TimedUdpReceive result)
@@ -34,6 +41,10 @@ namespace BMOnline.Server
             else if (message is StatusMessage statusMessage)
             {
                 HandleStatus(statusMessage);
+            }
+            else if (message is RaceStateUpdateMessage raceStateUpdateMessage)
+            {
+                HandleRaceStateUpdate(raceStateUpdateMessage);
             }
             else if (message is ChatMessage chatMessage)
             {
@@ -98,6 +109,22 @@ namespace BMOnline.Server
             user.RequestedChatIndex = message.RequestedChatIndex;
         }
 
+        private void HandleRaceStateUpdate(RaceStateUpdateMessage message)
+        {
+            if (!userManager.TryGetUserFromSecret(message.Secret, out User? user))
+                return; //If user not found, drop packet
+            user.Renew(Time);
+
+            if (raceGamemode.UserInGamemode(user.Id))
+            {
+                raceGamemode.UpdateRaceState(user.Id, message);
+            }
+            else if (timeAttackGamemode.UserInGamemode(user.Id))
+            {
+                timeAttackGamemode.UpdateRaceState(user.Id, message);
+            }
+        }
+
         private void HandleChat(ChatMessage message)
         {
             if (!userManager.TryGetUserFromSecret(message.Secret, out User? user))
@@ -157,12 +184,14 @@ namespace BMOnline.Server
 
             if (user.Requests.TryGetValue(message.RelayId, out RelayRequest? existingRequest) && existingRequest?.RequestId != message.RequestId)
             {
-                //If player info request, update player stage
+                //If player info request, update player stage and mode
                 if (message.RelayId == 0)
                 {
                     PlayerInfoRequest playerInfoRequest = new PlayerInfoRequest();
                     playerInfoRequest.Decode(message.RelayData);
-                    userManager.ChangeUserStage(user.Secret, playerInfoRequest.Stage);
+                    user.Stage = playerInfoRequest.Stage;
+                    if (playerInfoRequest.Mode != user.Mode)
+                        userManager.ChangeUserMode(user.Secret, playerInfoRequest.Mode);
                     playerInfoRequest = new PlayerInfoRequest(user.Name, playerInfoRequest.Mode, playerInfoRequest.Course, playerInfoRequest.Stage, playerInfoRequest.Character, playerInfoRequest.SkinIndex, playerInfoRequest.CustomisationsNum, playerInfoRequest.CustomisationsChara);
                     message.RelayData = playerInfoRequest.Encode();
                 }
@@ -190,6 +219,10 @@ namespace BMOnline.Server
             }
             loginRefusals.Clear();
 
+            //Update gamemodes
+            raceGamemode.Update(Time);
+            timeAttackGamemode.Update(Time);
+
             //Send status updates to each user
             foreach (User user in userManager.Users)
             {
@@ -216,7 +249,7 @@ namespace BMOnline.Server
                     await SendAsync(chatBytes, user.EndPoint);
                 }
                 //Send snapshots
-                Dictionary<ushort, List<User>> snapshotIdToRelevantUsers = new Dictionary<ushort, List<User>>();
+                Dictionary<ushort, List<RelaySnapshotReceiveMessage.RelaySnapshotPlayer>> snapshotIdToPlayerData = new Dictionary<ushort, List<RelaySnapshotReceiveMessage.RelaySnapshotPlayer>>();
                 foreach (User currentUser in userManager.Users)
                 {
                     foreach (KeyValuePair<ushort, RelaySnapshot?> kvp in currentUser.Snapshots.Where(kvp => kvp.Value != null && user.Snapshots.ContainsKey(kvp.Key)))
@@ -225,29 +258,34 @@ namespace BMOnline.Server
                             (kvp.Value!.BroadcastType == RelaySnapshotBroadcastType.EveryoneOnStage && kvp.Value!.BroadcastTypeOperand == user.Stage) ||
                             (kvp.Value!.BroadcastType == RelaySnapshotBroadcastType.SpecificPlayer && kvp.Value!.BroadcastTypeOperand == user.Id))
                         {
-                            if (!snapshotIdToRelevantUsers.ContainsKey(kvp.Key))
-                                snapshotIdToRelevantUsers[kvp.Key] = new List<User>();
-                            snapshotIdToRelevantUsers[kvp.Key].Add(currentUser);
+                            if (!snapshotIdToPlayerData.ContainsKey(kvp.Key))
+                                snapshotIdToPlayerData[kvp.Key] = new List<RelaySnapshotReceiveMessage.RelaySnapshotPlayer>();
+                            RelaySnapshot snapshot = currentUser.Snapshots[kvp.Key]!;
+                            snapshotIdToPlayerData[kvp.Key].Add(new RelaySnapshotReceiveMessage.RelaySnapshotPlayer()
+                            {
+                                Id = currentUser.Id,
+                                Tick = snapshot.Tick,
+                                AgeMs = (ushort)Math.Min((Time - snapshot.ReceivedOn).Milliseconds, ushort.MaxValue),
+                                RelayData = snapshot.RelayData
+                            });
                         }
                     }
                 }
-                foreach (KeyValuePair<ushort, List<User>> kvp in snapshotIdToRelevantUsers)
+                if (raceGamemode.UserInGamemode(user.Id))
+                {
+                    snapshotIdToPlayerData.Add(1, new List<RelaySnapshotReceiveMessage.RelaySnapshotPlayer>() { raceGamemode.GetRaceStateToSend(Time, CurrentTick) });
+                }
+                else if (timeAttackGamemode.UserInGamemode(user.Id))
+                {
+                    snapshotIdToPlayerData.Add(1, new List<RelaySnapshotReceiveMessage.RelaySnapshotPlayer>() { timeAttackGamemode.GetRaceStateToSend(Time, CurrentTick) });
+                }
+                foreach (KeyValuePair<ushort, List<RelaySnapshotReceiveMessage.RelaySnapshotPlayer>> kvp in snapshotIdToPlayerData)
                 {
                     byte[] snapshotReceiveBytes = new RelaySnapshotReceiveMessage()
                     {
                         Secret = user.Secret,
                         RelayId = kvp.Key,
-                        Players = kvp.Value.Select(player =>
-                        {
-                            RelaySnapshot snapshot = player.Snapshots[kvp.Key]!;
-                            return new RelaySnapshotReceiveMessage.RelaySnapshotPlayer()
-                            {
-                                Id = player.Id,
-                                Tick = snapshot.Tick,
-                                AgeMs = (ushort)Math.Min((Time - snapshot.ReceivedOn).Milliseconds, ushort.MaxValue),
-                                RelayData = snapshot.RelayData
-                            };
-                        }).ToArray()
+                        Players = kvp.Value.ToArray()
                     }.Encode();
                     await SendAsync(snapshotReceiveBytes, user.EndPoint);
                 }

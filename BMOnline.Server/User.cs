@@ -32,6 +32,7 @@ namespace BMOnline.Server
             }
 
             Stage = ushort.MaxValue;
+            Mode = byte.MaxValue;
 
             Renew(currentTime);
         }
@@ -49,6 +50,7 @@ namespace BMOnline.Server
         public Dictionary<ushort, RelayRequest?> Requests { get; }
         public Dictionary<ushort, List<ushort>> RequestedPlayers { get; }
 
+        public byte Mode { get; set; }
         public ushort Stage { get; set; }
 
         public void Renew(TimeSpan currentTime)

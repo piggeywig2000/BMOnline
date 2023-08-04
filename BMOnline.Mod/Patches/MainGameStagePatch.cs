@@ -1,4 +1,5 @@
 ﻿using System;
+using BMOnline.Common.Gamemodes;
 using Flash2;
 using UnhollowerBaseLib;
 using UnhollowerBaseLib.Runtime;
@@ -10,6 +11,9 @@ namespace BMOnline.Mod.Patches
     internal static class MainGameStagePatch
     {
         public static RaceManager RaceManager { private get; set; }
+        public static bool DidBlockLoadThisFrame { get; set; }
+        public static bool ShouldPreventLoad { private get; set; } = false;
+        public static bool ShouldPreventFinish { private get; set; } = false;
 
         private delegate void InitializeDelegate(IntPtr _thisPtr, int index, MainGameDef.eGameKind in_gameKind, IntPtr in_mgStageDatum, IntPtr in_mgBgDatum, int playerIndex);
         private static InitializeDelegate InitializeInstance;
@@ -42,6 +46,14 @@ namespace BMOnline.Mod.Patches
         private delegate void UpdateGoalSubEffectPlus1Delegate(IntPtr _thisPtr);
         private static UpdateGoalSubEffectPlus1Delegate UpdateGoalSubEffectPlus1Instance;
         private static UpdateGoalSubEffectPlus1Delegate UpdateGoalSubEffectPlus1Original;
+
+        private delegate void ChangeNextStageDelegate(IntPtr _thisPtr);
+        private static ChangeNextStageDelegate ChangeNextStageInstance;
+        private static ChangeNextStageDelegate ChangeNextStageOriginal;
+
+        private delegate void SetTimerDelegate(IntPtr _thisPtr, MainGameDef.eGameKind gameKind);
+        private static SetTimerDelegate SetTimerInstance;
+        private static SetTimerDelegate SetTimerOriginal;
 
         public static MainGameStage MainGameStage { get; private set; } = null;
         public static event EventHandler OnReset;
@@ -87,6 +99,16 @@ namespace BMOnline.Mod.Patches
             UpdateGoalSubEffectPlus1Original = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
                 typeof(MainGameStage).GetMethod(nameof(MainGameStage.updateGoalSub_EFFECT_Plus1)))
                 .GetValue(null)).MethodPointer, UpdateGoalSubEffectPlus1Instance);
+
+            ChangeNextStageInstance = ChangeNextStage;
+            ChangeNextStageOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
+                typeof(MainGameStage).GetMethod(nameof(MainGameStage.changeNextStage)))
+                .GetValue(null)).MethodPointer, ChangeNextStageInstance);
+
+            SetTimerInstance = SetTimer;
+            SetTimerOriginal = ClassInjector.Detour.Detour(UnityVersionHandler.Wrap((Il2CppMethodInfo*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(
+                typeof(MainGameStage).GetMethod(nameof(MainGameStage.setTimer)))
+                .GetValue(null)).MethodPointer, SetTimerInstance);
         }
 
         static void Initialize(IntPtr _thisPtr, int index, MainGameDef.eGameKind in_gameKind, IntPtr in_mgStageDatum, IntPtr in_mgBgDatum, int playerIndex)
@@ -126,6 +148,7 @@ namespace BMOnline.Mod.Patches
 
         static void FixedUpdate(IntPtr _thisPtr)
         {
+            DidBlockLoadThisFrame = false;
             FixedUpdateOriginal(_thisPtr);
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
             if (mainGameStage.state == MainGameStage.State.GAME && mainGameStage.gameKind == (MainGameDef.eGameKind)9 && AppInput.State(mainGameStage.m_PlayerIndex).ButtonDown(AppInput.eAction.MainGame_QuickRetry))
@@ -140,12 +163,14 @@ namespace BMOnline.Mod.Patches
 
         static void MdActivatePlayer(IntPtr _thisPtr)
         {
-            if (MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)9 && !Input.GetKey(KeyCode.G))
+            if (MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)9 && ShouldPreventLoad)
             {
                 RaceManager.ChangeLoading(true);
+                DidBlockLoadThisFrame = true;
                 return;
             }
             RaceManager.ChangeLoading(false);
+            DidBlockLoadThisFrame = false;
             MdActivatePlayerOriginal(_thisPtr);
         }
 
@@ -154,6 +179,8 @@ namespace BMOnline.Mod.Patches
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
             if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGameStage.sTimeupWait))
             {
+                if (ShouldPreventFinish)
+                    return;
                 mainGameStage.m_SubState = 3;
                 MainGame.Instance.FadeOut();
             }
@@ -165,6 +192,8 @@ namespace BMOnline.Mod.Patches
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
             if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGame.Instance.m_ReplayParam.FalloutPreTime))
             {
+                if (ShouldPreventFinish)
+                    return;
                 mainGameStage.m_SubState = 5;
                 MainGame.Instance.FadeOut();
             }
@@ -176,12 +205,52 @@ namespace BMOnline.Mod.Patches
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
             if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 4 && mainGameStage.m_StateFrame >= 185f)
             {
-                mainGameStage.m_SelectedResultButton = MgResultMenu.eTextKind.Retry;
-                mainGameStage.m_IsSkipOpening = true;
-                mainGameStage.m_UpdateGoalSequence.Req(new Action(mainGameStage.updateGoalSub_RECREATE));
+                if (!ShouldPreventFinish)
+                {
+                    mainGameStage.m_SelectedResultButton = MgResultMenu.eTextKind.Retry;
+                    mainGameStage.m_IsSkipOpening = true;
+                    mainGameStage.m_UpdateGoalSequence.Req(new Action(mainGameStage.updateGoalSub_RECREATE));
+                }
                 return;
             }
             UpdateGoalSubEffectPlus1Original(_thisPtr);
+        }
+
+        static void ChangeNextStage(IntPtr _thisPtr)
+        {
+            MainGameStage mainGameStage = new MainGameStage(_thisPtr);
+            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9)
+            {
+                GameParam.selectorParam.selectedCourse = MainGameDef.eCourse.Smb2_StoryWorld01;
+                ChangeNextStageOriginal(_thisPtr);
+                GameParam.selectorParam.selectedCourse = MainGameDef.eCourse.Invalid;
+            }
+            else
+            {
+                ChangeNextStageOriginal(_thisPtr);
+            }
+        }
+
+        static void SetTimer(IntPtr _thisPtr, MainGameDef.eGameKind gameKind)
+        {
+            MainGameStage mainGameStage = new MainGameStage(_thisPtr);
+            if ((byte)gameKind == (byte)OnlineGamemode.RaceMode)
+            {
+                int limitTime = mainGameStage.m_mgStageDatum.GetLimitTime(MainGameDef.eGameKind.Practice);
+                if (RaceManager.TimeRemaining > 0 && limitTime > RaceManager.TimeRemaining)
+                {
+                    limitTime = (int)RaceManager.TimeRemaining;
+                }
+                mainGameStage.m_LimitTime = limitTime;
+            }
+            else if ((byte)gameKind == (byte)OnlineGamemode.TimeAttackMode)
+            {
+                mainGameStage.m_LimitTime = RaceManager.TimeRemaining > 0 ? (int)RaceManager.TimeRemaining : mainGameStage.m_mgStageDatum.GetLimitTime(MainGameDef.eGameKind.Practice);
+            }
+            else
+            {
+                SetTimerOriginal(_thisPtr, gameKind);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using BMOnline.Common;
+using BMOnline.Common.Gamemodes;
+using BMOnline.Server.Gamemodes;
 
 namespace BMOnline.Server
 {
@@ -7,7 +8,7 @@ namespace BMOnline.Server
     {
         private readonly Dictionary<ushort, User> idToUser = new Dictionary<ushort, User>();
         private readonly Dictionary<uint, User> secretToUser = new Dictionary<uint, User>();
-        private readonly SecretsDict<ushort> stageToSecrets = new SecretsDict<ushort>();
+        private readonly Dictionary<OnlineGamemode, IGamemodeBase> gamemodes = new Dictionary<OnlineGamemode, IGamemodeBase>();
 
         public int TotalCount => secretToUser.Count;
         public IReadOnlyCollection<User> Users => secretToUser.Values;
@@ -19,7 +20,10 @@ namespace BMOnline.Server
         public User GetUserFromId(ushort id) => idToUser[id];
         public User GetUserFromSecret(uint secret) => secretToUser[secret];
 
-        public IEnumerable<User> GetUsersInStage(ushort stage) => stageToSecrets.GetCollectionSecrets(stage).Select(GetUserFromSecret);
+        public void RegisterGamemode(IGamemodeBase gamemode)
+        {
+            gamemodes.Add(gamemode.GamemodeType, gamemode);
+        }
 
         public void AddUser(User user)
         {
@@ -34,22 +38,24 @@ namespace BMOnline.Server
             {
                 idToUser.Remove(user.Id);
                 secretToUser.Remove(user.Secret);
-                stageToSecrets.RemoveSecretFromCollection(user.Stage, user.Secret);
+                if (gamemodes.TryGetValue((OnlineGamemode)user.Mode, out IGamemodeBase? gamemode))
+                    gamemode.RemoveUser(user.Id);
             }
             return expiredUsers;
         }
 
-        public void ChangeUserStage(uint userSecret, ushort newStage)
+        public void ChangeUserMode(uint userSecret, byte newMode)
         {
             if (!secretToUser.TryGetValue(userSecret, out User? user))
                 throw new ArgumentException("User with secret doesn't exist", nameof(userSecret));
 
-            stageToSecrets.RemoveSecretFromCollection(user.Stage, user.Secret);
+            if (gamemodes.TryGetValue((OnlineGamemode)user.Mode, out IGamemodeBase? gamemode))
+                gamemode.RemoveUser(user.Id);
 
-            if (Definitions.StageIds.Contains(newStage))
-                stageToSecrets.AddSecretToCollection(user.Stage, user.Secret);
+            user.Mode = newMode;
 
-            user.Stage = newStage;
+            if (gamemodes.TryGetValue((OnlineGamemode)newMode, out gamemode))
+                gamemode.AddUser(user);
         }
     }
 }

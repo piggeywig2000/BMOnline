@@ -5,6 +5,7 @@ using BMOnline.Client;
 using BMOnline.Common.Relay.Requests;
 using BMOnline.Common.Relay.Snapshots;
 using BMOnline.Mod.Settings;
+using Flash2;
 using UnityEngine;
 
 namespace BMOnline.Mod.Players
@@ -17,6 +18,7 @@ namespace BMOnline.Mod.Players
         private readonly LocalPlayer localPlayer;
         private readonly Dictionary<ushort, NetPlayer> idToPlayer = new Dictionary<ushort, NetPlayer>();
 
+        private ushort currentMode = byte.MaxValue;
         private ushort currentStageId = ushort.MaxValue;
         private Transform objRoot = null;
 
@@ -71,11 +73,13 @@ namespace BMOnline.Mod.Players
         public void LateUpdateFromState()
         {
             OnlineState state = client.State;
+            byte mode = MainGame.Exists ? (byte)MainGame.gameKind : byte.MaxValue;
             ushort stageId = gameState.IsInGame ? (ushort)gameState.MainGameStage.stageIndex : ushort.MaxValue;
 
             //Send player info if the stage changed
-            if (stageId != currentStageId)
+            if (mode != currentMode || stageId != currentStageId)
             {
+                currentMode = mode;
                 currentStageId = stageId;
                 objRoot = gameState.IsInGame ? GameObject.Find("ObjRoot").transform : null;
                 localPlayer.SendPlayerInfo(state);

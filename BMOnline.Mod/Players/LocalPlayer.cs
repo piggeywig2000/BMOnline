@@ -26,7 +26,7 @@ namespace BMOnline.Mod.Players
             PlayerInfoRequest playerInfo;
             if (!gameState.IsInGame)
             {
-                playerInfo = new PlayerInfoRequest("", byte.MaxValue, byte.MaxValue, ushort.MaxValue, lastPlayerInfo.Character, lastPlayerInfo.SkinIndex, lastPlayerInfo.CustomisationsNum, lastPlayerInfo.CustomisationsChara);
+                playerInfo = new PlayerInfoRequest("", MainGame.gameKind == MainGameDef.eGameKind.Invalid ? byte.MaxValue : (byte)MainGame.gameKind, byte.MaxValue, ushort.MaxValue, lastPlayerInfo.Character, lastPlayerInfo.SkinIndex, lastPlayerInfo.CustomisationsNum, lastPlayerInfo.CustomisationsChara);
             }
             else
             {

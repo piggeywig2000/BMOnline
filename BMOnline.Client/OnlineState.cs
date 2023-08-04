@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BMOnline.Client.Relay.Requests;
 using BMOnline.Client.Relay.Snapshots;
 using BMOnline.Common.Chat;
+using BMOnline.Common.Messaging;
 using BMOnline.Common.Relay.Requests;
 using BMOnline.Common.Relay.Snapshots;
 
@@ -21,6 +22,7 @@ namespace BMOnline.Client
             relaySnapshotTypes = new Dictionary<ushort, RelaySnapshotType>();
             relayRequestTypes = new Dictionary<ushort, RelayRequestType>();
             relaySnapshotTypes.Add(0, new RelaySnapshotType(0, () => new StagePositionSnapshot()));
+            relaySnapshotTypes.Add(1, new RelaySnapshotType(1, () => new RaceStateSnapshot()));
             relayRequestTypes.Add(0, new RelayRequestType(0, () => new PlayerInfoRequest()));
 
             foreach (RelaySnapshotType snapshotType in snapshotTypes)
@@ -45,10 +47,18 @@ namespace BMOnline.Client
         public OutgoingChatBuffer OutgoingChats { get; set; }
         public IncomingChatBuffer IncomingChats { get; set; }
 
+        public RaceStateUpdateMessage RaceStateToSend { get; set; }
+
+        public void SetRaceState(RaceStateUpdateMessage state)
+        {
+            RaceStateToSend = state;
+        }
+
         public RelaySnapshotType GetRelaySnapshotType(ushort relayId) => relaySnapshotTypes.TryGetValue(relayId, out RelaySnapshotType snapshotType) ? snapshotType : null;
         public RelayRequestType GetRelayRequestType(ushort relayId) => relayRequestTypes.TryGetValue(relayId, out RelayRequestType requestType) ? requestType : null;
 
         public RelaySnapshotType GetStagePositionType() => GetRelaySnapshotType(0);
+        public RelaySnapshotType GetRaceStateType() => GetRelaySnapshotType(1);
         public RelayRequestType GetPlayerInfoType() => GetRelayRequestType(0);
 
         public IReadOnlyCollection<ushort> GetAllPlayers() => GetPlayerInfoType().GetAllPlayers();
