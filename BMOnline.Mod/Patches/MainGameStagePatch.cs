@@ -151,7 +151,7 @@ namespace BMOnline.Mod.Patches
             DidBlockLoadThisFrame = false;
             FixedUpdateOriginal(_thisPtr);
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
-            if (mainGameStage.state == MainGameStage.State.GAME && mainGameStage.gameKind == (MainGameDef.eGameKind)9 && AppInput.State(mainGameStage.m_PlayerIndex).ButtonDown(AppInput.eAction.MainGame_QuickRetry))
+            if (mainGameStage.state == MainGameStage.State.GAME && (mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode) && AppInput.State(mainGameStage.m_PlayerIndex).ButtonDown(AppInput.eAction.MainGame_QuickRetry))
             {
                 mainGameStage.m_State = MainGameStage.State.RETRY;
                 mainGameStage.m_StateFrame = 0;
@@ -163,7 +163,7 @@ namespace BMOnline.Mod.Patches
 
         static void MdActivatePlayer(IntPtr _thisPtr)
         {
-            if (MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)9 && ShouldPreventLoad)
+            if ((MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || MainGame.mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode) && ShouldPreventLoad)
             {
                 RaceManager.ChangeLoading(true);
                 DidBlockLoadThisFrame = true;
@@ -177,7 +177,7 @@ namespace BMOnline.Mod.Patches
         static void UpdateTimeup(IntPtr _thisPtr)
         {
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
-            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGameStage.sTimeupWait))
+            if ((mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode) && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGameStage.sTimeupWait))
             {
                 if (ShouldPreventFinish)
                     return;
@@ -190,7 +190,7 @@ namespace BMOnline.Mod.Patches
         static void UpdateFallOut(IntPtr _thisPtr)
         {
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
-            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGame.Instance.m_ReplayParam.FalloutPreTime))
+            if ((mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode) && mainGameStage.m_SubState == 1 && mainGameStage.m_StateFrame > Util.SecToFrame(MainGame.Instance.m_ReplayParam.FalloutPreTime))
             {
                 if (ShouldPreventFinish)
                     return;
@@ -203,7 +203,7 @@ namespace BMOnline.Mod.Patches
         static void UpdateGoalSubEffectPlus1(IntPtr _thisPtr)
         {
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
-            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9 && mainGameStage.m_SubState == 4 && mainGameStage.m_StateFrame >= 185f)
+            if ((mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode) && mainGameStage.m_SubState == 4 && mainGameStage.m_StateFrame >= 185f)
             {
                 if (!ShouldPreventFinish)
                 {
@@ -219,7 +219,7 @@ namespace BMOnline.Mod.Patches
         static void ChangeNextStage(IntPtr _thisPtr)
         {
             MainGameStage mainGameStage = new MainGameStage(_thisPtr);
-            if (mainGameStage.gameKind == (MainGameDef.eGameKind)9)
+            if (mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || mainGameStage.gameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode)
             {
                 GameParam.selectorParam.selectedCourse = MainGameDef.eCourse.Smb2_StoryWorld01;
                 ChangeNextStageOriginal(_thisPtr);

@@ -1,4 +1,5 @@
 ﻿using System;
+using BMOnline.Common.Gamemodes;
 using Flash2;
 using UnhollowerBaseLib;
 using UnhollowerBaseLib.Runtime;
@@ -42,7 +43,7 @@ namespace BMOnline.Mod.Patches
 
         static bool Start(IntPtr _thisPtr)
         {
-            if (GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)9)
+            if (GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode)
             {
                 if (RaceStageId == 0)
                 {
@@ -58,7 +59,7 @@ namespace BMOnline.Mod.Patches
 
         static void md_main(IntPtr _thisPtr)
         {
-            if (GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)9)
+            if (GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || GameParam.selectorParam.selectedGameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode)
             {
                 MainGame mainGame = new MainGame(_thisPtr);
                 if ((mainGame.m_GameInfo == null || !mainGame.m_GameInfo.m_isLoading) && mainGame.m_isRequestRecreateStage)
@@ -80,12 +81,14 @@ namespace BMOnline.Mod.Patches
         {
             if (Pause.Exists && Pause.Instance.currentData?.tips?.m_MgTipsArray != null && Pause.Instance.currentData.tips.m_MgTipsArray.Length <= 8)
             {
-                SelTipsObject.TipArray[] newTips = new SelTipsObject.TipArray[10];
+                SelTipsObject.TipArray[] newTips = new SelTipsObject.TipArray[11];
                 Array.Copy(Pause.Instance.currentData.tips.m_MgTipsArray, newTips, 8);
                 newTips[9] = new SelTipsObject.TipArray() { m_TipsArray = new SelTipsElement[1] { new SelTipsElement() { m_Text = new Framework.Text.TextReference() { m_Key = "tips_main_onlinerace01" } } } };
+                newTips[10] = new SelTipsObject.TipArray() { m_TipsArray = new SelTipsElement[1] { new SelTipsElement() { m_Text = new Framework.Text.TextReference() { m_Key = "tips_main_onlinetimeattack01" } } } };
                 Pause.Instance.currentData.tips.m_MgTipsArray = new Il2CppReferenceArray<SelTipsObject.TipArray>(newTips);
             }
-            if (Pause.Exists && Pause.Instance.currentData?.m_ItemDataList != null && new MainGame(_thisPtr).m_GameKind == (MainGameDef.eGameKind)9 && Pause.Instance.currentData.m_ItemDataList.Length >= 8)
+            MainGame mainGame = new MainGame(_thisPtr);
+            if (Pause.Exists && Pause.Instance.currentData?.m_ItemDataList != null && (mainGame.m_GameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode || mainGame.m_GameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode) && Pause.Instance.currentData.m_ItemDataList.Length >= 8)
             {
                 Pause.Instance.currentData.m_ItemDataList.RemoveAt(5);
                 Pause.Instance.currentData.m_ItemDataList.RemoveAt(3);

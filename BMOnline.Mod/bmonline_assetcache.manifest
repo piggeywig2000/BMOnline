@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1507395392
+CRC: 705753266
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: cabae6304bab8d33621515576dd8310b
+    Hash: b3e82dabc4b4c5d686d5ffcc4c20de50
   TypeTreeHash:
     serializedVersion: 2
     Hash: 4df8c69f2c8a6ad9e3cbf82bb83e4dc3
@@ -17,4 +17,6 @@ SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/Application/AssetBundlesRes/UI/t_sousa_main_online_race.tga
 - Assets/Application/AssetBundlesRes/UI/t_tmb_mode_online_race.tga
+- Assets/Application/AssetBundlesRes/UI/t_sousa_main_online_timeattack.tga
+- Assets/Application/AssetBundlesRes/UI/t_tmb_mode_online_timeattack.tga
 Dependencies: []

@@ -55,34 +55,44 @@ namespace BMOnline.Mod
 
             Il2CppSystem.Reflection.MethodInfo egkValToNameGetter = erhEgamekind.GetProperty("valueToNameCollection").GetGetMethod();
             Il2CppSystem.Collections.Generic.Dictionary<MainGameDef.eGameKind, string> egkValToName = egkValToNameGetter.Invoke(null, new Il2CppReferenceArray<Il2CppSystem.Object>(0)).Cast<Il2CppSystem.Collections.Generic.Dictionary<MainGameDef.eGameKind, string>>();
-            egkValToName.Add((MainGameDef.eGameKind)9, "Race");
+            egkValToName.Add((MainGameDef.eGameKind)OnlineGamemode.RaceMode, "OnlineRace");
+            egkValToName.Add((MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode, "OnlineTimeAttack");
 
             Il2CppSystem.Reflection.MethodInfo egkNameToValGetter = erhEgamekind.GetProperty("nameToValueCollection").GetGetMethod();
             Il2CppSystem.Collections.Generic.Dictionary<string, MainGameDef.eGameKind> egkNameToVal = egkNameToValGetter.Invoke(null, new Il2CppReferenceArray<Il2CppSystem.Object>(0)).Cast<Il2CppSystem.Collections.Generic.Dictionary<string, MainGameDef.eGameKind>>();
-            egkNameToVal.Add("Race", (MainGameDef.eGameKind)9);
+            egkNameToVal.Add("OnlineRace", (MainGameDef.eGameKind)OnlineGamemode.RaceMode);
+            egkNameToVal.Add("OnlineTimeAttack", (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode);
 
             Il2CppSystem.Reflection.MethodInfo mgkValToNameGetter = erhMaingamekind.GetProperty("valueToNameCollection").GetGetMethod();
             Il2CppSystem.Collections.Generic.Dictionary<SelectorDef.MainGameKind, string> mgkValToName = mgkValToNameGetter.Invoke(null, new Il2CppReferenceArray<Il2CppSystem.Object>(0)).Cast<Il2CppSystem.Collections.Generic.Dictionary<SelectorDef.MainGameKind, string>>();
-            mgkValToName.Add((SelectorDef.MainGameKind)8, "RaceMode");
+            mgkValToName.Add((SelectorDef.MainGameKind)8, "OnlineRaceMode");
+            mgkValToName.Add((SelectorDef.MainGameKind)9, "OnlineTimeAttackMode");
 
             Il2CppSystem.Reflection.MethodInfo mgkNameToValGetter = erhMaingamekind.GetProperty("nameToValueCollection").GetGetMethod();
             Il2CppSystem.Collections.Generic.Dictionary<string, SelectorDef.MainGameKind> mgkNameToVal = mgkNameToValGetter.Invoke(null, new Il2CppReferenceArray<Il2CppSystem.Object>(0)).Cast<Il2CppSystem.Collections.Generic.Dictionary<string, SelectorDef.MainGameKind>>();
-            mgkNameToVal.Add("RaceMode", (SelectorDef.MainGameKind)8);
+            mgkNameToVal.Add("OnlineRaceMode", (SelectorDef.MainGameKind)8);
+            mgkNameToVal.Add("OnlineTimeAttackMode", (SelectorDef.MainGameKind)9);
 
-            PauseDef.s_PauseModeKindCollection.Add((MainGameDef.eGameKind)9, Pause.ModeKind.MainGame_Practice);
+            PauseDef.s_PauseModeKindCollection.Add((MainGameDef.eGameKind)OnlineGamemode.RaceMode, Pause.ModeKind.MainGame_Practice);
+            PauseDef.s_PauseModeKindCollection.Add((MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode, Pause.ModeKind.MainGame_Practice);
 
             SelPauseWindow.s_MgMenuKindCollection.Add((SelectorDef.MainGameKind)8, SelectorDef.MainMenuKind.MgModeSelect);
 
             TextData textData = new TextData();
             textData.textDictionary.Add("maingame_onlineracemode", new TextData.Context() { text = "Online Race Mode" });
+            textData.textDictionary.Add("maingame_onlinetimeattackmode", new TextData.Context() { text = "Online Time Attack Mode" });
             textData.textDictionary.Add("maingame_howtoplay_onlinerace", new TextData.Context() { text = "Race against online players to reach the goal first. Everyone starts at the same time and the first to reach the goal wins. Press <sprite name=\"MainGame_QuickRetry\"> to retry the stage right away.", isUseTag = true });
+            textData.textDictionary.Add("maingame_howtoplay_onlinetimeattack", new TextData.Context() { text = "Race against online players to reach the goal in the shortest time. The player with the best time when the time limit is reached wins. Press <sprite name=\"MainGame_QuickRetry\"> to retry the stage right away.", isUseTag = true });
             textData.textDictionary.Add("tips_main_onlinerace01", new TextData.Context() { text = "Press <sprite name=\"MainGame_QuickRetry\"> in Online Race Mode to retry the stage right away!", isUseTag = true });
+            textData.textDictionary.Add("tips_main_onlinetimeattack01", new TextData.Context() { text = "Press <sprite name=\"MainGame_QuickRetry\"> in Online Time Attack Mode to retry the stage right away!", isUseTag = true });
             Framework.Text.TextManager.AddData(GameParam.language, textData);
 
             AssetBundleCache.element_t element = new AssetBundleCache.element_t();
             AssetBundleCache.Instance.m_assetBundleNameToEntityDict.Add("bmonline_assetcache", element);
             AssetBundleCache.Instance.m_pathToAssetBundleNameDict.Add("ui/t_tmb_mode_online_race.tga", "bmonline_assetcache");
+            AssetBundleCache.Instance.m_pathToAssetBundleNameDict.Add("ui/t_tmb_mode_online_timeattack.tga", "bmonline_assetcache");
             AssetBundleCache.Instance.m_pathToAssetBundleNameDict.Add("ui/t_sousa_main_online_race.tga", "bmonline_assetcache");
+            AssetBundleCache.Instance.m_pathToAssetBundleNameDict.Add("ui/t_sousa_main_online_timeattack.tga", "bmonline_assetcache");
             element.Load("bmonline_assetcache");
 
             //Sound
@@ -122,20 +132,32 @@ namespace BMOnline.Mod
                 SelMgModeItemData itemData = new SelMgModeItemData();
                 itemData.transitionMenuKind = SelectorDef.MainMenuKind.HowToPlay;
                 itemData.mainGamemode = (SelectorDef.MainGameKind)8;
-                itemData.mainGameKind = (MainGameDef.eGameKind)9;
+                itemData.mainGameKind = (MainGameDef.eGameKind)OnlineGamemode.RaceMode;
                 itemData.textKey = "maingame_onlineracemode";
                 itemData.descriptionTextKey = "";
                 itemData.isHideText = true;
                 itemData.supplementaryTextKey = "";
                 itemData.m_ThumbnailSpritePath = new SubAssetSpritePath() { m_Identifier = "ui/t_tmb_mode_online_race.tga:t_tmb_mode_online_race" };
                 dataList.m_ItemDataList.Add(itemData);
+
+                itemData = new SelMgModeItemData();
+                itemData.transitionMenuKind = SelectorDef.MainMenuKind.HowToPlay;
+                itemData.mainGamemode = (SelectorDef.MainGameKind)8;
+                itemData.mainGameKind = (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode;
+                itemData.textKey = "maingame_onlinetimeattackmode";
+                itemData.descriptionTextKey = "";
+                itemData.isHideText = true;
+                itemData.supplementaryTextKey = "";
+                itemData.m_ThumbnailSpritePath = new SubAssetSpritePath() { m_Identifier = "ui/t_tmb_mode_online_timeattack.tga:t_tmb_mode_online_timeattack" };
+                dataList.m_ItemDataList.Add(itemData);
             }
 
             SelHowToPlayData howToPlayData = sequence.GetData<SelHowToPlayData>(SelMainMenuSequence.Data.HowToPlay);
             if (howToPlayData.m_PCData.m_MainGameDataArray.Length <= 8)
             {
-                SelHowToPlayItemDataListObject[] newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
+                SelHowToPlayItemDataListObject[] newHowToPlayArray = new SelHowToPlayItemDataListObject[10];
                 Array.Copy(howToPlayData.m_PCData.m_MainGameDataArray, newHowToPlayArray, 8);
+
                 newHowToPlayArray[8] = newHowToPlayArray[4];
                 SelHTPMainGame pageDataListObject = newHowToPlayArray[8].m_PageDataListObject.Cast<SelHTPMainGame>();
                 Il2CppSystem.Collections.Generic.List<SelHowToPlayPageData> ruleExplanationlist = new Il2CppSystem.Collections.Generic.List<SelHowToPlayPageData>();
@@ -144,15 +166,30 @@ namespace BMOnline.Mod
                     m_TextReference = new Framework.Text.TextReference() { m_Key = "maingame_howtoplay_onlinerace" },
                     m_Sprite = "ui/t_sousa_main_online_race.tga"
                 });
-                pageDataListObject.m_Collection.Add((MainGameDef.eGameKind)9, new SelHTPMainGame.ModePageData()
+                pageDataListObject.m_Collection.Add((MainGameDef.eGameKind)OnlineGamemode.RaceMode, new SelHTPMainGame.ModePageData()
                 {
                     m_RuleExplanationList = new SelHowToPlayPageDataListObject.PageDataList() { list = ruleExplanationlist }
                 });
+
+                newHowToPlayArray[9] = newHowToPlayArray[4];
+                pageDataListObject = newHowToPlayArray[9].m_PageDataListObject.Cast<SelHTPMainGame>();
+                ruleExplanationlist = new Il2CppSystem.Collections.Generic.List<SelHowToPlayPageData>();
+                ruleExplanationlist.Add(new SelHowToPlayPageData()
+                {
+                    m_TextReference = new Framework.Text.TextReference() { m_Key = "maingame_howtoplay_onlinetimeattack" },
+                    m_Sprite = "ui/t_sousa_main_online_timeattack.tga"
+                });
+                pageDataListObject.m_Collection.Add((MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode, new SelHTPMainGame.ModePageData()
+                {
+                    m_RuleExplanationList = new SelHowToPlayPageDataListObject.PageDataList() { list = ruleExplanationlist }
+                });
+
                 howToPlayData.m_PCData.m_MainGameDataArray = newHowToPlayArray;
 
-                newHowToPlayArray = new SelHowToPlayItemDataListObject[9];
+                newHowToPlayArray = new SelHowToPlayItemDataListObject[10];
                 Array.Copy(howToPlayData.m_ConsoleData.m_MainGameDataArray, newHowToPlayArray, 8);
                 newHowToPlayArray[8] = newHowToPlayArray[4];
+                newHowToPlayArray[9] = newHowToPlayArray[4];
                 howToPlayData.m_ConsoleData.m_MainGameDataArray = newHowToPlayArray;
             }
         }

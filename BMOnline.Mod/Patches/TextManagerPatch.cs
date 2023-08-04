@@ -4,6 +4,7 @@ using UnhollowerBaseLib;
 using UnhollowerRuntimeLib;
 using UnityEngine;
 using Flash2;
+using BMOnline.Common.Gamemodes;
 
 namespace BMOnline.Mod.Patches
 {
@@ -24,9 +25,12 @@ namespace BMOnline.Mod.Patches
         static IntPtr GetText(IntPtr _thisPtr, SystemLanguage language, IntPtr key)
         {
             string keyStr = IL2CPP.Il2CppStringToManaged(key);
-            if (MainGame.gameKind == (MainGameDef.eGameKind)9 && !string.IsNullOrEmpty(keyStr) && keyStr == "maingame_practice_mode")
+            if (!string.IsNullOrEmpty(keyStr) && keyStr == "maingame_practice_mode")
             {
-                key = IL2CPP.ManagedStringToIl2Cpp("maingame_onlineracemode");
+                if (MainGame.gameKind == (MainGameDef.eGameKind)OnlineGamemode.RaceMode)
+                    key = IL2CPP.ManagedStringToIl2Cpp("maingame_onlineracemode");
+                else if (MainGame.gameKind == (MainGameDef.eGameKind)OnlineGamemode.TimeAttackMode)
+                    key = IL2CPP.ManagedStringToIl2Cpp("maingame_onlinetimeattackmode");
             }
             return GetTextOriginal(_thisPtr, language, key);
         }

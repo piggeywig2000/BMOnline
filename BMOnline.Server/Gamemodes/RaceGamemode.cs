@@ -126,16 +126,19 @@ namespace BMOnline.Server.Gamemodes
 
             if (State == RaceState.Inactive || (State == RaceState.Finished && currentTime - stateTime >= TimeSpan.FromSeconds(10)))
             {
+                Console.WriteLine("next");
                 NextStage();
             }
 
             if (State == RaceState.WaitingForLoad && players.Values.All(p => p.IsLoaded))
             {
+                Console.WriteLine("start");
                 StartStage(currentTime);
             }
 
-            if (State == RaceState.Playing && (players.Values.All(p => p.IsFinished) || GetTimeRemaining(currentTime) <= 0))
+            if (State == RaceState.Playing && ((!IsTimeAttack && players.Values.All(p => p.IsFinished)) || GetTimeRemaining(currentTime) <= 0))
             {
+                Console.WriteLine("finish");
                 FinishStage(currentTime);
             }
         }

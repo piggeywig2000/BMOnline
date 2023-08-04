@@ -26,9 +26,10 @@ namespace BMOnline.Mod.Patches
             GameParam gameParam = new GameParam(_thisPtr);
             if (gameParam.m_SkipParam.m_SkipMgHowToPlayArray.Length <= 8)
             {
-                bool[] skipHowToPlayArray = new bool[9];
+                bool[] skipHowToPlayArray = new bool[10];
                 Array.Copy(gameParam.m_SkipParam.m_SkipMgHowToPlayArray, skipHowToPlayArray, 8);
                 skipHowToPlayArray[8] = false;
+                skipHowToPlayArray[9] = false;
                 gameParam.m_SkipParam.m_SkipMgHowToPlayArray = skipHowToPlayArray;
             }
         }
